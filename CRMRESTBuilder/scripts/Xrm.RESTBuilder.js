@@ -3,6 +3,7 @@ Xrm.RESTBuilder = Xrm.RESTBuilder || { __namespace: true };
 
 Xrm.RESTBuilder.ODataPath = null;
 Xrm.RESTBuilder.CrmVersion = [];
+Xrm.RESTBuilder.EntityMetadata = [];
 Xrm.RESTBuilder.CurrentEntityAttributes = [];
 Xrm.RESTBuilder.CurrentEntityOneToManyRelationships = [];
 Xrm.RESTBuilder.CurrentEntityManyToOneRelationships = [];
@@ -405,25 +406,46 @@ Xrm.RESTBuilder.GetCrmVersion = function () {
 
 //Get the Metadata for all entities
 Xrm.RESTBuilder.GetAllEntityMetadata = function () {
-
 	var mdq = Sdk.Mdq;
 	var semp = mdq.SearchableEntityMetadataProperties;
+	var samp = mdq.SearchableAttributeMetadataProperties; //
 	var emp = mdq.EntityMetadataProperties;
+	var amp = mdq.AttributeMetadataProperties; //
 
 	var entityFilter = new mdq.MetadataFilterExpression(mdq.LogicalOperator.And);
 	entityFilter.addCondition(semp.ObjectTypeCode, mdq.MetadataConditionOperator.GreaterThan, 0);
 
 	var entityProperties;
 	if (Xrm.RESTBuilder.CrmVersion[0] > 7) {
-		entityProperties = new mdq.MetadataPropertiesExpression(false, [emp.PrimaryIdAttribute, emp.DisplayName, emp.SchemaName, emp.IsIntersect, emp.EntitySetName, emp.ObjectTypeCode, emp.MetadataId]);
+		entityProperties = new mdq.MetadataPropertiesExpression(false, [emp.Attributes, emp.PrimaryIdAttribute, emp.DisplayName, emp.SchemaName, emp.IsIntersect, emp.EntitySetName, emp.ObjectTypeCode]);
 	} else {
 		entityProperties = new mdq.MetadataPropertiesExpression(false, [emp.PrimaryIdAttribute, emp.DisplayName, emp.SchemaName, emp.IsIntersect, emp.MetadataId]);
 	}
+
+	var attributesFilter = new mdq.MetadataFilterExpression(mdq.LogicalOperator.And);
+	attributesFilter.addCondition(samp.AttributeType, mdq.MetadataConditionOperator.NotEquals, "Virtual");
+	attributesFilter.addCondition(samp.SchemaName, mdq.MetadataConditionOperator.NotEquals, "Address1_Composite");
+	attributesFilter.addCondition(samp.SchemaName, mdq.MetadataConditionOperator.NotEquals, "Address2_Composite");
+	attributesFilter.addCondition(samp.IsValidForCreate, mdq.MetadataConditionOperator.Equals, true);
+	attributesFilter.addCondition(samp.AttributeOf, mdq.MetadataConditionOperator.Equals, null);
+	attributesFilter.addCondition(samp.RequiredLevel, mdq.MetadataConditionOperator.Equals, "ApplicationRequired");
+
+	var attributeProperties;
+	if (Xrm.RESTBuilder.CrmVersion[0] > 7) {
+		attributeProperties = new mdq.MetadataPropertiesExpression(false, [
+			amp.DisplayName, amp.AttributeType, amp.OptionSet, amp.SchemaName, amp.IsValidForUpdate, amp.IsValidForCreate, amp.MaxLength,
+			amp.RequiredLevel, amp.MaxValue, amp.MinValue, amp.Precision, amp.Targets, amp.Format, amp.DateTimeBehavior]);
+	} else {
+		attributeProperties = new mdq.MetadataPropertiesExpression(false, [
+			amp.DisplayName, amp.AttributeType, amp.OptionSet, amp.SchemaName, amp.IsValidForUpdate, amp.IsValidForCreate, amp.MaxLength,
+			amp.RequiredLevel, amp.MaxValue, amp.MinValue, amp.Precision, amp.Targets, amp.Format]);
+	}
+
 	var labelQuery = new mdq.LabelQueryExpression([window.parent.Xrm.Page.context.getUserLcid()]);
 	var query = new mdq.EntityQueryExpression(
 		entityFilter,
 		entityProperties,
-		null,
+		new mdq.AttributeQueryExpression(attributesFilter, attributeProperties),
 		null,
 		labelQuery);
 
@@ -438,6 +460,7 @@ Xrm.RESTBuilder.GetAllEntityMetadata = function () {
 //Get the Metadata for all entities - Callback
 Xrm.RESTBuilder.GetAllEntityMetadata_Response = function (response) {
 	var options = [];
+	Xrm.RESTBuilder.EntityMetadata = response.getEntityMetadata();
 	for (var i = 0; i < response.getEntityMetadata().length; i++) {
 
 		if (Xrm.RESTBuilder.IsUnsearchable(response.getEntityMetadata()[i].SchemaName)) {
@@ -829,6 +852,7 @@ Xrm.RESTBuilder.GetCsdl = function () {
 				var csdl = req.responseXML;
 				Xrm.RESTBuilder.EntitySets = $(csdl).find("EntitySet").toArray();
 				Xrm.RESTBuilder.EntityTypes = $(csdl).find("EntityType").toArray();
+				Xrm.RESTBuilder.Create_XrmWebApi_EntityMappings();
 
 				// Update the EntitySetName attribute in the Entity drop down 
 				$("#EntityList > option").each(function () {
@@ -945,6 +969,16 @@ Xrm.RESTBuilder.ToggleWebApiFunctionality = function () {
 			$("#FormattedValues").show();
 		}
 	}
+
+	if (parseFloat($("#WebApiVersion").val()) >= 9) {
+		$("#LibraryXrmWebApi").button("option", "disabled", false);
+	}
+	else {
+		$("#LibraryXrmWebApi").button("option", "disabled", true);
+		if ($("#LibraryXrmWebApi").is(":checked")) {
+			$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
+		}
+	}
 }
 
 Xrm.RESTBuilder.ProcessActions = function (e) {
@@ -1030,6 +1064,34 @@ Xrm.RESTBuilder.ProcessFunctions = function (functions) {
 			Xrm.RESTBuilder.Functions.push(func);
 		}
 	}
+}
+
+Xrm.RESTBuilder.Create_XrmWebApi_EntityMappings = function () {
+	// In order to execute a Xrm.WebApi request from this window this object needs 
+	// to exist mapping logical name to entity set name
+	window["ENTITY_SET_NAMES"] = [];
+	var mappings = [];
+	var map = {};
+	for (var i = 0; i < Xrm.RESTBuilder.EntitySets.length; i++) {
+		map[Xrm.RESTBuilder.EntitySets[i].attributes["EntityType"].value.replace("Microsoft.Dynamics.CRM.", "")] =
+			Xrm.RESTBuilder.EntitySets[i].attributes["Name"].value;
+
+	};
+	mappings.push(map);
+	window["ENTITY_SET_NAMES"] = JSON.stringify(map);
+
+	// In order to execute a Xrm.WebApi request from this window this object needs 
+	// to exist mapping logical name to primary id attribute
+	window["ENTITY_PRIMARY_KEYS"] = [];
+	mappings = [];
+	map = {};
+	for (var i = 0; i < Xrm.RESTBuilder.EntityMetadata.length; i++) {
+		map[Xrm.RESTBuilder.EntityMetadata[i].LogicalName] =
+			Xrm.RESTBuilder.EntityMetadata[i].PrimaryIdAttribute;
+
+	};
+	mappings.push(map);
+	window["ENTITY_PRIMARY_KEYS"] = JSON.stringify(map);
 }
 
 Xrm.RESTBuilder.BuildActionList = function () {
@@ -1686,6 +1748,23 @@ Xrm.RESTBuilder.Delete_jQuery_WebApi = function () {
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
 
+Xrm.RESTBuilder.Delete_XrmWebApi_WebApi = function () {
+	var js = [];
+	// Xrm.WebApi doesn't support using alternate keys yet
+	js.push("Xrm.WebApi.deleteRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + $("#DeleteId").val() + "\").then(\n");
+	js.push("    function success(result) {\n");
+	js.push("        //Success - No Return Data - Do Something\n");
+	js.push("    },");
+	js.push("    function(error) {");
+	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("    }\n");
+	js.push(");");
+
+	Xrm.RESTBuilder.ReplaceLine = "function success(result) {";
+	Xrm.RESTBuilder.ErrorReplaceLine = "function(error) {";
+	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
+}
+
 Xrm.RESTBuilder.Delete_jQuery = function () {
 	var js = [];
 	js.push("$.ajax({");
@@ -1933,6 +2012,21 @@ Xrm.RESTBuilder.Create_jQuery_WebApi = function (js) {
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
 
+Xrm.RESTBuilder.Create_XrmWebApi_WebApi = function (js) {
+	js.push("Xrm.WebApi.createRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", entity).then(\n");
+	js.push("    function success(result) {");
+	js.push("        var newEntityId = result.id;");
+	js.push("    },");
+	js.push("    function(error) {");
+	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("    }\n");
+	js.push(");");
+
+	Xrm.RESTBuilder.ReplaceLine = "var newEntityId = result.id;";
+	Xrm.RESTBuilder.ErrorReplaceLine = "function(error) {";
+	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
+}
+
 Xrm.RESTBuilder.Create_XSVC = function (js) {
 	js.push("XrmSvcToolkit.createRecord({");
 	js.push("    entityName: \"" + Xrm.RESTBuilder.EntitySchema + "\",");
@@ -2149,6 +2243,22 @@ Xrm.RESTBuilder.Update_jQuery_WebApi = function (js) {
 	Xrm.RESTBuilder.ErrorReplaceLine = "error: function(xhr, textStatus, errorThrown) {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
+
+Xrm.RESTBuilder.Update_XrmWebApi_WebApi = function (js) {
+	// Xrm.WebApi doesn't support using alternate keys yet
+	js.push("Xrm.WebApi.updateRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + $("#UpdateId").val() + "\", entity).then(\n");
+	js.push("    function success(result) {");
+	js.push("        var updatedEntityId = result.id;");
+	js.push("    },");
+	js.push("    function(error) {");
+	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("    }\n");
+	js.push(");");
+
+	Xrm.RESTBuilder.ReplaceLine = "var updatedEntityId = result.id;";
+	Xrm.RESTBuilder.ErrorReplaceLine = "function(error) {";
+	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
+}
 
 Xrm.RESTBuilder.Update_XSVC = function (js) {
 	js.push("XrmSvcToolkit.updateRecord({");
@@ -2463,6 +2573,24 @@ Xrm.RESTBuilder.Retrieve_jQuery_WebApi = function (selects, expand) {
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
 
+Xrm.RESTBuilder.Retrieve_XrmWebApi_WebApi = function (selects, expand) {
+	var js = [];
+	// Xrm.WebApi doesn't support using alternate keys yet
+	var seft = Xrm.RESTBuilder.BuildRESTString(selects, expand, null, null, null, null);
+	js.push("Xrm.WebApi.retrieveRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + $("#RetrieveId").val() + "\", \"" + seft + "\").then(\n");
+	js.push("    function success(result) {");
+	js.push(Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 4));
+	js.push("    },");
+	js.push("    function(error) {");
+	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("    }\n");
+	js.push(");");
+
+	Xrm.RESTBuilder.ReplaceLine = "function success(result) {";
+	Xrm.RESTBuilder.ErrorReplaceLine = "function(error) {";
+	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
+}
+
 Xrm.RESTBuilder.Retrieve_jQuery = function (selects, expand) {
 	var js = [];
 	js.push("$.ajax({");
@@ -2636,7 +2764,7 @@ Xrm.RESTBuilder.RetrieveMultiple_XMLHTTP_WebApi = function (selects, expand, fil
 	var js = [];
 	js.push("var req = new XMLHttpRequest();");
 	js.push("req.open(\"GET\", Xrm.Page.context.getClientUrl() + \"/api/data/v" + $("#WebApiVersion option:selected").val() + "/" + Xrm.RESTBuilder.EntitySetName);
-	var seft = Xrm.RESTBuilder.BuildRESTString_WebApi(selects, expand, filter, orderby, count);
+	var seft = Xrm.RESTBuilder.BuildRESTString_WebApi(selects, expand, filter, orderby, count, null);
 	js.push(((seft === null) ? "" : seft) + "\", ");
 	js.push(Xrm.RESTBuilder.Async + ");");
 	js.push("req.setRequestHeader(\"OData-MaxVersion\", \"4.0\");");
@@ -2679,7 +2807,7 @@ Xrm.RESTBuilder.RetrieveMultiple_jQuery_WebApi = function (selects, expand, filt
 	js.push("    contentType: \"application/json; charset=utf-8\",");
 	js.push("    datatype: \"json\",");
 	js.push("    url: " + "Xrm.Page.context.getClientUrl() + " + "\"/api/data/v" + $("#WebApiVersion option:selected").val() + "/" + Xrm.RESTBuilder.EntitySetName);
-	var seft = Xrm.RESTBuilder.BuildRESTString_WebApi(selects, expand, filter, orderby, count);
+	var seft = Xrm.RESTBuilder.BuildRESTString_WebApi(selects, expand, filter, orderby, count, null);
 	js.push(((seft === null) ? "" : seft) + "\",");
 	js.push("    beforeSend: function(XMLHttpRequest) {");
 	js.push("        XMLHttpRequest.setRequestHeader(\"OData-MaxVersion\", \"4.0\");");
@@ -2710,6 +2838,26 @@ Xrm.RESTBuilder.RetrieveMultiple_jQuery_WebApi = function (selects, expand, filt
 	Xrm.RESTBuilder.ErrorReplaceLine = "error: function(xhr, textStatus, errorThrown) {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
+
+Xrm.RESTBuilder.RetrieveMultiple_XrmWebApi_WebApi = function (selects, expand, filter, top, orderby, count) {
+	var js = [];
+	var seft = Xrm.RESTBuilder.BuildRESTString_WebApi(selects, expand, filter, orderby, count, top);
+	seft = (seft !== null) ? "\"" + seft + "\"" : "null";
+	js.push("Xrm.WebApi.retrieveMultipleRecords(\"" + Xrm.RESTBuilder.EntityLogical + "\", " + seft + ").then(\n");
+	js.push("    function success(results) {");
+	var resultVars = Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 4);
+	resultVars = resultVars.replace(new RegExp("results.value", "g"), "results.entities");
+	js.push(resultVars);
+	js.push("    },");
+	js.push("    function(error) {");
+	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("    }\n");
+	js.push(");");
+
+	Xrm.RESTBuilder.ReplaceLine = "function success(results) {";
+	Xrm.RESTBuilder.ErrorReplaceLine = "function(error) {";
+	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
+}
 
 Xrm.RESTBuilder.RetrieveMultiple_jQuery = function (selects, expand, filter, top, orderby, skip) {
 	var js = [];
@@ -2942,18 +3090,98 @@ Xrm.RESTBuilder.Action_jQuery_WebApi = function (action, parameters) {
 	}
 	js.push("    },");
 	js.push("    async: " + Xrm.RESTBuilder.Async + ",");
-	js.push("    success: function(data, textStatus, xhr) {");
-	js.push("        var results = data;");
+	js.push("    success: function(data, textStatus, xhr) {\n");
+	if (action.ReturnTypes.length > 0) {
+		js.push("        var results = data;");
+	}
+	else {
+		js.push("        //Success - No Return Data - Do Something\n");
+	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
 	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
 	js.push("    }");
 	js.push("});");
 
-	Xrm.RESTBuilder.ReplaceLine = "var results = data;";
+	if (action.ReturnTypes.length > 0) {
+		Xrm.RESTBuilder.ReplaceLine = "var results = data;";
+	}
+	else {
+		Xrm.RESTBuilder.ReplaceLine = "//Success - No Return Data - Do Something\n";
+	}
 	Xrm.RESTBuilder.ErrorReplaceLine = "error: function(xhr, textStatus, errorThrown) {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
+
+Xrm.RESTBuilder.Action_Function_XrmWebApi = function (action, parameters, operationType) {
+	var js = [];
+	var params = [];
+	if (parameters) {
+		js.push(parameters);
+		var splitParameters = parameters.split("\n");
+		for (var i = 0; i < splitParameters.length; i++) {
+			if (splitParameters[i].substr(0, 11) === "parameters.")
+				params.push(splitParameters[i].split("=")[0].trim());
+		}
+	}
+	var requestName = action["Name"].charAt(0).toLowerCase() + action["Name"].substr(1) + "Request";
+	js.push(Xrm.RESTBuilder.Create_XrmWebApi_ActionRequest(action, operationType, params, requestName));
+	js.push("Xrm.WebApi.execute(" + requestName + ").then(\n");
+	js.push("    function success(result) {");
+	js.push("        if (result.ok) {\n");
+	if (action.ReturnTypes.length > 0)
+		js.push("            var results = JSON.parse(result.responseText);\n");
+	else
+		js.push("            //Success - No Return Data - Do Something\n");
+	js.push("        }");
+	js.push("    },");
+	js.push("    function(error) {");
+	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("    }\n");
+	js.push(");");
+
+	Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(result.responseText);";
+	Xrm.RESTBuilder.ErrorReplaceLine = "function(error) {";
+	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
+}
+
+Xrm.RESTBuilder.Action_XrmWebApi_WebApi = function (action, parameters) {
+	Xrm.RESTBuilder.Action_Function_XrmWebApi(action, parameters, 0);
+}
+
+Xrm.RESTBuilder.Create_XrmWebApi_ActionRequest = function (action, operationType, params, requestName) {
+	// operationType [action = 0, function = 1, CRUD = 2]
+	var js = [];
+	var props = [];
+	for (var i = 0; i < action.Parameters.length; i++) {
+		props.push(action.Parameters[i].Name + ": " + params[i] + ",");
+	}
+	js.push("var " + requestName + " = {");
+	if (props.length > 0)
+		js.push(props.join("\n") + "\n\n");
+	else
+		js.push("\n");
+	js.push("getMetadata: function () {");
+	js.push("return {");
+	if (action.IsBound)
+		js.push("boundParameter: \"" + action.Parameters[0].Name + "\",");
+	else
+		js.push("boundParameter: null,");
+	js.push("parameterTypes: {");
+	var parameterTypes = [];
+	for (var i = 0; i < action.Parameters.length; i++) {
+		var parameterType = [];
+		parameterType.push("\"" + action.Parameters[i].Name + "\": {")
+		parameterType.push("\"typeName\": \"" + action.Parameters[i].Type + "\",")
+		parameterType.push("\"structuralProperty\": " + Xrm.RESTBuilder.GetWebApi_StructuralProperty_Value(action.Parameters[i].Type) + "}")
+		parameterTypes.push(parameterType.join(""));
+	}
+	js.push(parameterTypes.join(",") + "},");
+	js.push("operationType: " + operationType + ", ");
+	js.push("operationName: \"" + action.Name + "\"");
+	js.push("};}};\n\n");
+	return js.join("");
+}
 
 Xrm.RESTBuilder.Function_XMLHTTP_WebApi = function (func, parameters) {
 	var js = [];
@@ -3032,18 +3260,32 @@ Xrm.RESTBuilder.Function_jQuery_WebApi = function (func, parameters) {
 	}
 	js.push("    },");
 	js.push("    async: " + Xrm.RESTBuilder.Async + ",");
-	js.push("    success: function(data, textStatus, xhr) {");
-	js.push("        var results = data;");
+	js.push("    success: function(data, textStatus, xhr) {\n");
+	if (func.ReturnTypes.length > 0) {
+		js.push("        var results = data;");
+	}
+	else {
+		js.push("        //Success - No Return Data - Do Something\n");
+	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
 	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
 	js.push("    }");
 	js.push("});");
 
-	Xrm.RESTBuilder.ReplaceLine = "var results = data;";
+	if (func.ReturnTypes.length > 0) {
+		Xrm.RESTBuilder.ReplaceLine = "var results = data;";
+	}
+	else {
+		Xrm.RESTBuilder.ReplaceLine = "//Success - No Return Data - Do Something\n";
+	}
 	Xrm.RESTBuilder.ErrorReplaceLine = "error: function(xhr, textStatus, errorThrown) {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
+
+Xrm.RESTBuilder.Function_XrmWebApi_WebApi = function (func, parameters) {
+	Xrm.RESTBuilder.Action_Function_XrmWebApi(func, parameters, 1);
+}
 
 Xrm.RESTBuilder.Retrieve = function (library) {
 	Xrm.RESTBuilder.CreateUrl("Retrieve");
@@ -3075,6 +3317,9 @@ Xrm.RESTBuilder.Retrieve = function (library) {
 				break;
 			case "jQuery":
 				Xrm.RESTBuilder.Retrieve_jQuery_WebApi(Xrm.RESTBuilder.BuildSelectString_WebApi(), Xrm.RESTBuilder.BuildExpandString_WebApi());
+				break;
+			case "XrmWebApi":
+				Xrm.RESTBuilder.Retrieve_XrmWebApi_WebApi(Xrm.RESTBuilder.BuildSelectString_WebApi(), Xrm.RESTBuilder.BuildExpandString_WebApi());
 				break;
 		}
 	}
@@ -3125,6 +3370,10 @@ Xrm.RESTBuilder.RetrieveMultiple = function (library) {
 				Xrm.RESTBuilder.RetrieveMultiple_jQuery_WebApi(Xrm.RESTBuilder.BuildSelectString_WebApi(), Xrm.RESTBuilder.BuildExpandString_WebApi(),
 					Xrm.RESTBuilder.BuildFilterString_WebApi(), Xrm.RESTBuilder.BuildTopString_WebApi(), Xrm.RESTBuilder.BuildOrderByString_WebApi(), Xrm.RESTBuilder.BuildCountString_WebApi());
 				break;
+			case "XrmWebApi":
+				Xrm.RESTBuilder.RetrieveMultiple_XrmWebApi_WebApi(Xrm.RESTBuilder.BuildSelectString_WebApi(), Xrm.RESTBuilder.BuildExpandString_WebApi(),
+					Xrm.RESTBuilder.BuildFilterString_WebApi(), Xrm.RESTBuilder.BuildTopString(), Xrm.RESTBuilder.BuildOrderByString_WebApi(), Xrm.RESTBuilder.BuildCountString_WebApi());
+				break;
 		}
 	}
 };
@@ -3146,7 +3395,8 @@ Xrm.RESTBuilder.CreateUrl = function (action) {
 	} else {
 		var seft2 = Xrm.RESTBuilder.BuildRESTString_WebApi(Xrm.RESTBuilder.BuildSelectString_WebApi(),
 			Xrm.RESTBuilder.BuildExpandString_WebApi(), Xrm.RESTBuilder.BuildFilterString_WebApi(),
-			Xrm.RESTBuilder.BuildOrderByString_WebApi(), Xrm.RESTBuilder.BuildCountString_WebApi());
+			Xrm.RESTBuilder.BuildOrderByString_WebApi(), Xrm.RESTBuilder.BuildCountString_WebApi(),
+			$("#LibraryXrmWebApi").is(":checked") ? Xrm.RESTBuilder.BuildTopString() : null);
 		url = Xrm.RESTBuilder.ODataPath + Xrm.RESTBuilder.EntitySetName;
 
 		if (Xrm.RESTBuilder.Type === "Retrieve") {
@@ -3191,6 +3441,9 @@ Xrm.RESTBuilder.Create = function (library) {
 			case "jQuery":
 				Xrm.RESTBuilder.Create_jQuery_WebApi(Xrm.RESTBuilder.BuildObjectString_WebApi());
 				break;
+			case "XrmWebApi":
+				Xrm.RESTBuilder.Create_XrmWebApi_WebApi(Xrm.RESTBuilder.BuildObjectString_WebApi());
+				break;
 		}
 	}
 };
@@ -3225,6 +3478,9 @@ Xrm.RESTBuilder.Update = function (library) {
 			case "jQuery":
 				Xrm.RESTBuilder.Update_jQuery_WebApi(Xrm.RESTBuilder.BuildObjectString_WebApi());
 				break;
+			case "XrmWebApi":
+				Xrm.RESTBuilder.Update_XrmWebApi_WebApi(Xrm.RESTBuilder.BuildObjectString_WebApi());
+				break;
 		}
 	}
 };
@@ -3258,6 +3514,9 @@ Xrm.RESTBuilder.Delete = function (library) {
 				break;
 			case "jQuery":
 				Xrm.RESTBuilder.Delete_jQuery_WebApi();
+				break;
+			case "XrmWebApi":
+				Xrm.RESTBuilder.Delete_XrmWebApi_WebApi();
 				break;
 		}
 	}
@@ -3350,6 +3609,9 @@ Xrm.RESTBuilder.Action = function (library) {
 		case "jQuery":
 			Xrm.RESTBuilder.Action_jQuery_WebApi(action, Xrm.RESTBuilder.BuildParameters(action));
 			break;
+		case "XrmWebApi":
+			Xrm.RESTBuilder.Action_XrmWebApi_WebApi(action, Xrm.RESTBuilder.BuildParameters(action));
+			break;
 	}
 };
 
@@ -3366,6 +3628,9 @@ Xrm.RESTBuilder.Function = function (library) {
 			break;
 		case "jQuery":
 			Xrm.RESTBuilder.Function_jQuery_WebApi(func, Xrm.RESTBuilder.BuildParameters(func));
+			break;
+		case "XrmWebApi":
+			Xrm.RESTBuilder.Function_XrmWebApi_WebApi(func, Xrm.RESTBuilder.BuildParameters(func));
 			break;
 	}
 };
@@ -3392,7 +3657,7 @@ Xrm.RESTBuilder.ShowResults = function (results) {
 				delete result["__metadata"];
 				for (var k in result) {
 					if (result.hasOwnProperty(k)) {
-						if (result[k] !== null) {
+						if (result[k]) {
 							if (result[k].hasOwnProperty("__metadata")) {
 								delete result[k]["__metadata"];
 							}
@@ -3411,7 +3676,7 @@ Xrm.RESTBuilder.ShowResults = function (results) {
 			delete results["__metadata"];
 			for (var j in results) {
 				if (results.hasOwnProperty(j)) {
-					if (results[j] !== null) {
+					if (results[j]) {
 						if (results[j].hasOwnProperty("__metadata")) {
 							delete results[j]["__metadata"];
 						}
@@ -3645,7 +3910,7 @@ Xrm.RESTBuilder.GenerateResultVars_WebApi = function (selects, expand, spaces) {
 		}
 	}
 
-	//Web API does not return related items in a RetrieveMultiple so you don't accidently return 25,000,000 records (5,000 x 5,000)
+	//Web API does not return related items in a RetrieveMultiple so you don't accidentally return 25,000,000 records (5,000 x 5,000)
 	//Instead you need to use the @odata.nextLink to return the individual collection results
 	if (expand !== null && expand !== undefined && Xrm.RESTBuilder.Type === "RetrieveMultiple") {
 		expand = expand.replace("$expand=", "");
@@ -3871,7 +4136,8 @@ Xrm.RESTBuilder.BuildObjectString_WebApi = function () {
 				break;
 			case "Customer":
 			case "Lookup":
-				var entitySetName = Xrm.RESTBuilder.GetEntitySetName(sel1);
+				// var entitySetName = Xrm.RESTBuilder.GetEntitySetName(sel1);
+				var entitySetName = Xrm.RESTBuilder.GetEntitySetName(logical);
 				var relatedLogical = null;
 				if ($(tr).find("select:eq(1) option").size() > 1) {
 					relatedLogical = $(tr).find("select:eq(1) option:selected").attr("logicalname");
@@ -3944,9 +4210,9 @@ Xrm.RESTBuilder.BuildRESTString = function (selects, expand, filter, top, orderb
 	return js.join("");
 };
 
-Xrm.RESTBuilder.BuildRESTString_WebApi = function (selects, expand, filter, orderby, count) {
+Xrm.RESTBuilder.BuildRESTString_WebApi = function (selects, expand, filter, orderby, count, top) {
 	var js = [];
-	if (selects === null && expand == null && filter === null && orderby == null && count == null) {
+	if (selects === null && expand == null && filter === null && orderby == null && count == null && top == null) {
 		return null;
 	}
 
@@ -3983,6 +4249,14 @@ Xrm.RESTBuilder.BuildRESTString_WebApi = function (selects, expand, filter, orde
 			js.push("&" + count);
 		} else {
 			js.push("?" + count);
+		}
+	}
+
+	if (top !== null) {
+		if (Xrm.RESTBuilder.StartsWithQ(js)) {
+			js.push("&" + top);
+		} else {
+			js.push("?" + top);
 		}
 	}
 
@@ -4472,32 +4746,34 @@ Xrm.RESTBuilder.BuildOrderByString_WebApi = function () {
 };
 
 Xrm.RESTBuilder.BuildParameters = function (item) {
-	if (item.Parameters === null || item.Parameters === undefined || item.Parameters.length === 0) {
+	if (item.Parameters === null || item.Parameters === undefined || item.Parameters.length === 0)
 		return null;
-	}
 
 	var parameters = [];
 	parameters.push("var parameters = {};\n");
+	if (item.IsBound && (item.Parameters[0].Name === "entity" || item.Parameters[0].Name === "entityset") && Xrm.RESTBuilder.Library === "XrmWebApi") {
+		parameters.push("var entity = {};\n");
+		parameters.push("entity.id = \"" + $("#TargetId").val() + "\";\n");
+		parameters.push("entity.entityType = \"" + Xrm.RESTBuilder.ParameterTypeToEntityName(item.Parameters[0].Type) + "\";\n");
+		parameters.push("parameters.entity = entity;\n");
+	}
 
 	for (var i = 0; i < $("#InputParameters tbody tr").length; i++) {
 		var tr = $("#InputParameters tbody tr")[i];
 		var parameter = $.grep(item.Parameters, function (e) { return e.Name === $(tr).find("td:eq(0)").text(); });
 
-		//Skip creating for the "entity" parameter as the id & type are passed in the url
-		if (item.IsBound && parameter[0].Name === "entity") {
+		//Skip creating for the "entity" parameter as the id & type are passed in the url except Xrm.WebApi
+		if (item.IsBound && parameter[0].Name === "entity" && Xrm.RESTBuilder.Library !== "XrmWebApi")
 			continue;
-		}
 
-		if (!$(tr).find("input:checkbox:last").is(":checked")) {
+		if (!$(tr).find("input:checkbox:last").is(":checked"))
 			continue;
-		}
 
 		switch (parameter[0].Type) {
 			case "Edm.Boolean":
 				var booleanValue = $(tr).find("select:first option:selected").val();
-				if (parameter[0].Optional && booleanValue === "") {
+				if (parameter[0].Optional && booleanValue === "")
 					continue;
-				}
 				parameters.push("parameters." + parameter[0].Name + " = " + booleanValue.toLowerCase() + ";\n");
 				break;
 			case "Edm.DateTimeOffset":
@@ -4511,26 +4787,24 @@ Xrm.RESTBuilder.BuildParameters = function (item) {
 			case "Edm.Int32":
 			case "Edm.Int64":
 				var numberValue = $(tr).find("input:first").val();
-				if (parameter[0].Optional && numberValue === "") {
+				if (parameter[0].Optional && numberValue === "")
 					continue;
-				}
 				numberValue = (numberValue !== "" && numberValue !== undefined) ? numberValue : 0;
 				parameters.push("parameters." + parameter[0].Name + " = " + numberValue + ";\n");
 				break;
 			case "mscrm.Label":
 				var labelValue = $(tr).find("input:first").val();
-				if (parameter[0].Optional && labelValue === "") {
+				if (parameter[0].Optional && labelValue === "")
 					continue;
-				}
 				parameters.push("var " + parameter[0].Name.toLowerCase() + " = {};\n");
 				parameters.push(parameter[0].Name.toLowerCase() + ".LocalizedLabels = [];\n");
-				parameters.push("var " + parameter[0].Name.toLowerCase() + "LocalizedLabel = {};\n");
-				parameters.push(parameter[0].Name.toLowerCase() + "LocalizedLabel.Label = \"" + labelValue + "\";\n");
-				parameters.push(parameter[0].Name.toLowerCase() + "LocalizedLabel.LanguageCode = 1033;\n");
-				parameters.push(parameter[0].Name.toLowerCase() + "LocalizedLabel.IsManaged = false;\n");
-				parameters.push(parameter[0].Name.toLowerCase() + "LocalizedLabel.MetadataId = \"" + Xrm.RESTBuilder.GenerateGuid() + "\";\n");
-				parameters.push(parameter[0].Name.toLowerCase() + "LocalizedLabel.HasChanged = false;\n");
-				parameters.push(parameter[0].Name.toLowerCase() + ".LocalizedLabels.push(" + parameter[0].Name.toLowerCase() + "LocalizedLabel);\n");
+				parameters.push("var " + parameter[0].Name.toLowerCase() + ".LocalizedLabel = {};\n");
+				parameters.push(parameter[0].Name.toLowerCase() + ".LocalizedLabel.Label = \"" + labelValue + "\";\n");
+				parameters.push(parameter[0].Name.toLowerCase() + ".LocalizedLabel.LanguageCode = 1033;\n");
+				parameters.push(parameter[0].Name.toLowerCase() + ".LocalizedLabel.IsManaged = false;\n");
+				parameters.push(parameter[0].Name.toLowerCase() + ".LocalizedLabel.MetadataId = \"" + Xrm.RESTBuilder.GenerateGuid() + "\";\n");
+				parameters.push(parameter[0].Name.toLowerCase() + ".LocalizedLabel.HasChanged = false;\n");
+				parameters.push(parameter[0].Name.toLowerCase() + ".LocalizedLabels.push(" + parameter[0].Name.toLowerCase() + ".LocalizedLabel);\n");
 				parameters.push(parameter[0].Name.toLowerCase() + ".UserLocalizedLabel = {};\n");
 				parameters.push(parameter[0].Name.toLowerCase() + ".UserLocalizedLabel.Label = \"" + labelValue + "\";\n");
 				parameters.push(parameter[0].Name.toLowerCase() + ".UserLocalizedLabel.LanguageCode = 1033;\n");
@@ -4542,42 +4816,122 @@ Xrm.RESTBuilder.BuildParameters = function (item) {
 			case "Edm.Binary":
 			case "Edm.String":
 				var stringValue = $(tr).find("input:first").val();
-				if (parameter[0].Optional && stringValue === "") {
+				if (parameter[0].Optional && stringValue === "")
 					continue;
-				}
 				parameters.push("parameters." + parameter[0].Name + " = \"" + stringValue + "\";\n");
 				break;
 			case "Edm.Guid":
 				var guidValue = $(tr).find("input:first").val();
-				if (parameter[0].Optional && guidValue === "") {
+				if (parameter[0].Optional && guidValue === "")
 					continue;
-				}
 				parameters.push("parameters." + parameter[0].Name + " = \"" + guidValue + "\";\n");
 				break;
 			default:
-				var primaryIdAttribute = Xrm.RESTBuilder.GetPrimaryIdAttribute(parameter[0].Name.toLowerCase());
-				if (primaryIdAttribute === "")
-					primaryIdAttribute = "REPLACE_WITH_PRIMARY_ID_ATTRIBUTE";
-				if (Xrm.RESTBuilder.IsParameterEntity(parameter[0].Type)) {
-					//Entity
-					parameters.push("var " + parameter[0].Name.toLowerCase() + " = {};\n");
-					parameters.push(parameter[0].Name.toLowerCase() + "." + primaryIdAttribute + " = \"00000000-0000-0000-0000-000000000000\";\n");
-					parameters.push(parameter[0].Name.toLowerCase() + "[\"@odata.type\"] = \"Microsoft.Dynamics.CRM." + Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type) + "\";\n");
-					parameters.push("parameters." + parameter[0].Name + " = " + parameter[0].Name.toLowerCase() + ";\n");
-				} else if (Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type)) {
-					//Collection of entities
-					parameters.push("var " + parameter[0].Name.toLowerCase() + "1 = {};\n");
-					parameters.push(parameter[0].Name.toLowerCase() + "1." + primaryIdAttribute + " = \"00000000-0000-0000-0000-000000000000\";\n");
-					parameters.push(parameter[0].Name.toLowerCase() + "1[\"@odata.type\"] = \"Microsoft.Dynamics.CRM." + Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type) + "\";\n");
-					parameters.push("parameters." + parameter[0].Name + " = [" + parameter[0].Name.toLowerCase() + "1];\n");
-				} else {
+				if (Xrm.RESTBuilder.IsParameterEntity(parameter[0].Type) || Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type)) {
+					var entityLogical = Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type);
+					var primaryIdAttribute = Xrm.RESTBuilder.GetPrimaryIdAttribute(entityLogical);
+					if (primaryIdAttribute === "")
+						primaryIdAttribute = "REPLACE_WITH_PRIMARY_ID_ATTRIBUTE";
+
+					var parameterName = parameter[0].Name.toLowerCase();
+					if (Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type))
+						parameterName = parameterName + "1";
+
+					parameters.push("var " + parameterName + " = {};\n");
+					parameters.push(parameterName + "." + primaryIdAttribute + " = \"00000000-0000-0000-0000-000000000000\"; //Delete if creating new record \n");
+					parameters.push(parameterName + "[\"@odata.type\"]" + " = \"Microsoft.Dynamics.CRM." + Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type) + "\";\n");
+					if (entityLogical.substr(0, 7) !== "REPLACE") {
+						var entities = $.grep(Xrm.RESTBuilder.EntityMetadata, function (e) { return e.LogicalName === entityLogical; });
+						if (entities.length === 1) {
+							for (var j = 0; j < entities[0].Attributes.length; j++) {
+								var entityTypes = $.grep(Xrm.RESTBuilder.EntityTypes, function (e) { return e.attributes.Name.value === entityLogical; });
+								if (entityTypes.length !== 1)
+									continue;
+								var properties = $.grep($(entityTypes[0]).find("Property").toArray(), function (e) {
+									var logicalName = entities[0].Attributes[j].LogicalName;
+									if (entities[0].Attributes[j].AttributeType === "Lookup")
+										logicalName = "_" + logicalName + "_value";
+									return e.attributes.Name.value === logicalName;
+								});
+								if (properties.length !== 1)
+									continue;
+								var navigationProperties = $.grep($(entityTypes[0]).find("NavigationProperty").toArray(), function (e) {
+									return e.attributes.Name.value === entities[0].Attributes[j].LogicalName;
+								});
+								if (navigationProperties.length !== 1)
+									continue;
+								parameters.push(Xrm.RESTBuilder.BuildParametersForEntity(properties[0].attributes.Type.value, entities[0].Attributes[j].LogicalName,
+									navigationProperties[0].attributes.Type.value, parameterName));
+							}
+						}
+					}
+					if (Xrm.RESTBuilder.IsParameterEntity(parameter[0].Type))
+						parameters.push("parameters." + parameter[0].Name + " = " + parameterName + ";\n");
+					if (Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type))
+						parameters.push("parameters." + parameter[0].Name + " = [" + parameterName + "];\n");
+				}
+				else {
 					parameters.push("parameters." + parameter[0].Name + " = \"" + parameter[0].Type + " Not Handled" + "\";\n");
 				}
-				break;
 		}
 	}
 
 	parameters.push("\n");
+	return parameters.join("");
+}
+
+Xrm.RESTBuilder.BuildParametersForEntity = function (type, paramName, entityType, variableName) {
+	var parameters = [];
+	switch (type) {
+		case "Edm.Boolean":
+			parameters.push(variableName + "." + paramName + " = true;\n");
+			break;
+		case "Edm.DateTimeOffset":
+			parameters.push(variableName + "." + paramName + " = new Date(\"" + new Date().toLocaleString() + "\").toISOString();\n");
+			break;
+		case "Edm.Double":
+		case "Edm.Decimal":
+		case "Edm.Int32":
+		case "Edm.Int64":
+			parameters.push(variableName + "." + paramName + " = 0;\n");
+			break;
+		case "mscrm.Label":
+			parameters.push("var " + paramName.toLowerCase() + " = {};\n");
+			parameters.push(paramName.toLowerCase() + ".LocalizedLabels = [];\n");
+			parameters.push("var " + paramName.toLowerCase() + ".LocalizedLabel = {};\n");
+			parameters.push(paramName.toLowerCase() + ".LocalizedLabel.Label = \"???\";\n");
+			parameters.push(paramName.toLowerCase() + ".LocalizedLabel.LanguageCode = 1033;\n");
+			parameters.push(paramName.toLowerCase() + ".LocalizedLabel.IsManaged = false;\n");
+			parameters.push(paramName.toLowerCase() + ".LocalizedLabel.MetadataId = \"" + Xrm.RESTBuilder.GenerateGuid() + "\";\n");
+			parameters.push(paramName.toLowerCase() + ".LocalizedLabel.HasChanged = false;\n");
+			parameters.push(paramName.toLowerCase() + ".LocalizedLabels.push(" + paramName.toLowerCase() + ".LocalizedLabel);\n");
+			parameters.push(paramName.toLowerCase() + ".UserLocalizedLabel = {};\n");
+			parameters.push(paramName.toLowerCase() + ".UserLocalizedLabel.Label = \"???\";\n");
+			parameters.push(paramName.toLowerCase() + ".UserLocalizedLabel.LanguageCode = 1033;\n");
+			parameters.push(paramName.toLowerCase() + ".UserLocalizedLabel.IsManaged = false;\n");
+			parameters.push(paramName.toLowerCase() + ".UserLocalizedLabel.MetadataId = \"" + Xrm.RESTBuilder.GenerateGuid() + "\";\n");
+			parameters.push(paramName.toLowerCase() + ".UserLocalizedLabel.HasChanged = false;\n");
+			parameters.push(variableName + "." + paramName + " = " + paramName.toLowerCase() + ";\n");
+			break;
+		case "Edm.Binary":
+		case "Edm.String":
+			parameters.push(variableName + "." + paramName + " = \"???\";\n");
+			break;
+		case "Edm.Guid":
+			var entityLogical = Xrm.RESTBuilder.ParameterTypeToEntityName(entityType);
+			var primaryIdAttribute = "REPLACE_WITH_PRIMARY_ID_ATTRIBUTE";
+			var entitySetName = "REPLACE_WITH_ENTITY_SET_NAME";
+			if (entityLogical.substr(0, 7) !== "REPLACE") {
+				primaryIdAttribute = Xrm.RESTBuilder.GetPrimaryIdAttribute(entityLogical);
+				entitySetName = Xrm.RESTBuilder.GetEntitySetName(entityLogical);
+			}
+			parameters.push(variableName + "[\"" + primaryIdAttribute + "@odata.bind\"] = \"/" + entitySetName + "(00000000-0000-0000-0000-000000000000)\";\n");
+			break;
+		default:
+			parameters.push(variableName + "." + paramName + " = \"" + type + " Not Handled" + "\";\n");
+			break;
+	}
+
 	return parameters.join("");
 }
 
@@ -4929,10 +5283,15 @@ Xrm.RESTBuilder.SetAlternateKeyState = function () {
 		$(".AltKey").show();
 	}
 
-	if (Xrm.RESTBuilder.Endpoint === "WebApi" && Xrm.RESTBuilder.CurrentEntityAlternateKeys.length > 0) {
-		$(".AltKey").button("option", "disabled", false);
-	} else {
+	if (Xrm.RESTBuilder.Library === "XrmWebApi") {
 		$(".AltKey").button("option", "disabled", true);
+	}
+	else {
+		if (Xrm.RESTBuilder.Endpoint === "WebApi" && Xrm.RESTBuilder.CurrentEntityAlternateKeys.length > 0) {
+			$(".AltKey").button("option", "disabled", false);
+		} else {
+			$(".AltKey").button("option", "disabled", true);
+		}
 	}
 
 	if ($("#AlternateKeyRetrieve").is(":visible")) {
@@ -4944,7 +5303,10 @@ Xrm.RESTBuilder.SetAlternateKeyState = function () {
 	if ($("#AlternateKeyUpdate").is(":visible")) {
 		$("#AlternateKeyUpdate").hide();
 	}
-	$("#UpdateGUID").show();
+	if (Xrm.RESTBuilder.Type === "Update")
+		$("#UpdateGUID").show();
+	else
+		$("#UpdateGUID").hide();
 	if ($("#AlternateKeyDelete").is(":visible")) {
 		$("#AlternateKeyDelete").hide();
 	}
@@ -4965,6 +5327,10 @@ Xrm.RESTBuilder.Endpoint_Change = function () {
 		$("#LibrarySDK").button("option", "disabled", false);
 		$("#LibrarySDKJQ").button("option", "disabled", false);
 		$("#LibraryXSVC").button("option", "disabled", false);
+		$("#LibraryXrmWebApi").button("option", "disabled", true);
+		if ($("#LibraryXrmWebApi").is(":checked")) {
+			$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
+		}
 		$("#TypePredefinedQuery").button("option", "disabled", true);
 		$("#FormattedValues").hide();
 		$("#DetectChanges").hide();
@@ -5028,6 +5394,14 @@ Xrm.RESTBuilder.Endpoint_Change = function () {
 				$("#ui-accordion-Accordion-header-3").hide();
 			}
 			$("#ExpandEntity").prop("disabled", true);
+		}
+
+		if (parseFloat($("#WebApiVersion").val()) >= 9) {
+			$("#LibraryXrmWebApi").button("option", "disabled", false);
+		}
+		else {
+			$("#LibraryXrmWebApi").button("option", "disabled", true);
+			$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
 		}
 
 		if (Xrm.RESTBuilder.Type === "Create" || Xrm.RESTBuilder.Type === "Update") {
@@ -5131,6 +5505,13 @@ Xrm.RESTBuilder.Type_Change = function () {
 				for (var x = 2; x < 5; x++) {
 					$("#SelectList" + x + " li input:checked").removeAttr("checked");
 				}
+
+				if (parseFloat($("#WebApiVersion").val()) >= 9) {
+					$("#LibraryXrmWebApi").button("option", "disabled", false);
+				}
+				else {
+					$("#LibraryXrmWebApi").button("option", "disabled", true);
+				}
 			} else {
 				$("#DetectChanges").hide();
 				$("#FormattedValues").hide();
@@ -5145,6 +5526,12 @@ Xrm.RESTBuilder.Type_Change = function () {
 				$("#FormattedValues").show();
 				$("#Count").hide();
 				$("#ReturnRecord").hide();
+				if (parseFloat($("#WebApiVersion").val()) >= 9) {
+					$("#LibraryXrmWebApi").button("option", "disabled", false);
+				}
+				else {
+					$("#LibraryXrmWebApi").button("option", "disabled", true);
+				}
 			} else {
 				$("#DetectChanges").hide();
 				$("#FormattedValues").hide();
@@ -5176,6 +5563,12 @@ Xrm.RESTBuilder.Type_Change = function () {
 				} else {
 					$("#FormattedValues").hide();
 				}
+				if (parseFloat($("#WebApiVersion").val()) >= 9) {
+					$("#LibraryXrmWebApi").button("option", "disabled", false);
+				}
+				else {
+					$("#LibraryXrmWebApi").button("option", "disabled", true);
+				}
 			}
 			else {
 				$("#DetectChanges").hide();
@@ -5190,6 +5583,12 @@ Xrm.RESTBuilder.Type_Change = function () {
 				$("#FormattedValues").hide();
 				$("#Count").hide();
 				$("#ReturnRecord").hide();
+				if (parseFloat($("#WebApiVersion").val()) >= 9) {
+					$("#LibraryXrmWebApi").button("option", "disabled", false);
+				}
+				else {
+					$("#LibraryXrmWebApi").button("option", "disabled", true);
+				}
 			}
 			else {
 				$("#DetectChanges").hide();
@@ -5200,6 +5599,10 @@ Xrm.RESTBuilder.Type_Change = function () {
 		case "Associate":
 		case "Disassociate":
 			$("#AssociateDisassociate").show();
+			$("#LibraryXrmWebApi").button("option", "disabled", true);
+			if ($("#LibraryXrmWebApi").is(":checked")) {
+				$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
+			}
 			if (Xrm.RESTBuilder.Endpoint === "WebApi") {
 				$("#FormattedValues").hide();
 				$("#DetectChanges").hide();
@@ -5225,7 +5628,10 @@ Xrm.RESTBuilder.Type_Change = function () {
 			$("#DetectChanges").hide();
 			$("#PredefinedQuery").show();
 			$("#ReturnRecord").hide();
-
+			$("#LibraryXrmWebApi").button("option", "disabled", true);
+			if ($("#LibraryXrmWebApi").is(":checked")) {
+				$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
+			}
 			if (Xrm.RESTBuilder.FetchEditor) {
 				Xrm.RESTBuilder.FetchEditor.toTextArea();
 			}
@@ -5249,6 +5655,12 @@ Xrm.RESTBuilder.Type_Change = function () {
 			$("#FunctionDefinition").hide();
 			$("#ActionDefinition").show();
 			Xrm.RESTBuilder.BuildActionList();
+			if (parseFloat($("#WebApiVersion").val()) >= 9) {
+				$("#LibraryXrmWebApi").button("option", "disabled", false);
+			}
+			else {
+				$("#LibraryXrmWebApi").button("option", "disabled", true);
+			}
 			break;
 		case "Function":
 			$("#FormattedValues").hide();
@@ -5263,12 +5675,22 @@ Xrm.RESTBuilder.Type_Change = function () {
 			$("#FunctionDefinition").show();
 			$("#ActionDefinition").hide();
 			Xrm.RESTBuilder.BuildFunctionList();
+			if (parseFloat($("#WebApiVersion").val()) >= 9) {
+				$("#LibraryXrmWebApi").button("option", "disabled", false);
+			}
+			else {
+				$("#LibraryXrmWebApi").button("option", "disabled", true);
+			}
 			break;
 		case "RetrieveNextLink":
 			$("#NextLink").show();
 			$("#DetectChanges").show();
 			$("#Entity").hide();
 			$("#ReturnRecord").hide();
+			$("#LibraryXrmWebApi").button("option", "disabled", true);
+			if ($("#LibraryXrmWebApi").is(":checked")) {
+				$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
+			}
 			break;
 	}
 
@@ -5278,26 +5700,63 @@ Xrm.RESTBuilder.Type_Change = function () {
 	(Xrm.RESTBuilder.Type === "RetrieveMultiple") ? $("#RetrieveExtras").show() : $("#RetrieveExtras").hide();
 	(Xrm.RESTBuilder.Type === "RetrieveMultiple") ? $("#RetrieveFilters").show() : $("#RetrieveFilters").hide();
 	(Xrm.RESTBuilder.Type === "Associate" || Xrm.RESTBuilder.Type === "Disassociate") ? $("label[for=EntityList],#EntityList").hide() : $("label[for=EntityList],#EntityList").show();
+	Xrm.RESTBuilder.SetXrmWebApiStates();
 };
 
 Xrm.RESTBuilder.Library_Change = function () {
 	Xrm.RESTBuilder.Library = $("input[name='Library']:checked").val();
 	$("#AsyncFalse").button("option", "disabled", false);
-	if (Xrm.RESTBuilder.Library === "SDK") {
+	if (Xrm.RESTBuilder.Library === "SDK" || Xrm.RESTBuilder.Library === "SDKJQ" || Xrm.RESTBuilder.Library === "XrmWebApi") {
 		$("#AsyncFalse").removeAttr("checked");
 		$("#AsyncTrue").prop("checked", "true");
 		$("#AsyncFalse").button("refresh");
 		$("#AsyncTrue").button("refresh");
 		$("#AsyncFalse").button("option", "disabled", true);
 	}
-	else if (Xrm.RESTBuilder.Library === "SDKJQ") {
-		$("#AsyncFalse").removeAttr("checked");
-		$("#AsyncTrue").prop("checked", "true");
-		$("#AsyncFalse").button("refresh");
-		$("#AsyncTrue").button("refresh");
-		$("#AsyncFalse").button("option", "disabled", true);
-	}
+	Xrm.RESTBuilder.SetXrmWebApiStates();
 };
+
+Xrm.RESTBuilder.SetXrmWebApiStates = function () {
+	if (Xrm.RESTBuilder.Endpoint === "WebApi") {
+		if (Xrm.RESTBuilder.Library === "XrmWebApi") {
+			$("#FormattedValuesTrue").prop("checked", "true").button("refresh");
+			$("#FormattedValuesFalse").button("option", "disabled", true);
+			$("#CountFalse").prop("checked", "true").button("refresh");
+			$("#CountTrue").button("option", "disabled", true);
+			$("#AuthTokenFalse").prop("checked", "true").button("refresh");
+			$("#AuthTokenTrue").button("option", "disabled", true);
+			$("#ImpersonateFalse").prop("checked", "true").button("refresh");
+			$("#ImpersonateTrue").button("option", "disabled", true);
+			$("#DetectChangesFalse").prop("checked", "true").button("refresh");
+			$("#DetectChangesTrue").button("option", "disabled", true);
+			$("#ReturnRecordFalse").prop("checked", "true").button("refresh");
+			$("#ReturnRecordTrue").button("option", "disabled", true);
+			$("#PreventCreateFalse").prop("checked", "true").button("refresh");
+			$("#PreventCreateTrue").button("option", "disabled", true);
+			$("#PreventUpdateFalse").prop("checked", "true").button("refresh");
+			$("#PreventUpdateTrue").button("option", "disabled", true);
+
+			Xrm.RESTBuilder.FormattedValues_Change();
+			Xrm.RESTBuilder.Count_Change();
+			Xrm.RESTBuilder.AuthToken_Change();
+			Xrm.RESTBuilder.Impersonate_Change();
+			Xrm.RESTBuilder.DetectChanges_Change();
+			Xrm.RESTBuilder.PreventCreate_Change();
+			Xrm.RESTBuilder.PreventUpdate_Change();
+		}
+		else {
+			$("#FormattedValuesFalse").button("option", "disabled", false);
+			$("#CountTrue").button("option", "disabled", false);
+			$("#AuthTokenTrue").button("option", "disabled", false);
+			$("#ImpersonateTrue").button("option", "disabled", false);
+			$("#DetectChangesTrue").button("option", "disabled", false);
+			$("#ReturnRecordTrue").button("option", "disabled", false);
+			$("#PreventCreateTrue").button("option", "disabled", false);
+			$("#PreventUpdateTrue").button("option", "disabled", false);
+		}
+		Xrm.RESTBuilder.SetAlternateKeyState();
+	}
+}
 
 //Create Request Click
 Xrm.RESTBuilder.CreateRequest_Click = function () {
@@ -5508,11 +5967,11 @@ Xrm.RESTBuilder.Back_Click = function () {
 };
 
 Xrm.RESTBuilder.ActionReference_Click = function () {
-	window.open("https://msdn.microsoft.com/en-us/library/mt607829.aspx");
+	window.open("https://docs.microsoft.com/en-us/dynamics365/customer-engagement/web-api/actions?view=dynamics-ce-odata-9");
 }
 
 Xrm.RESTBuilder.FunctionReference_Click = function () {
-	window.open("https://msdn.microsoft.com/en-us/library/mt607866.aspx");
+	window.open("https://docs.microsoft.com/en-us/dynamics365/customer-engagement/web-api/functions?view=dynamics-ce-odata-9");
 }
 
 //EntityList Change
@@ -5635,7 +6094,9 @@ Xrm.RESTBuilder.PredefinedQueryType_Change = function () {
 //Actions Change
 Xrm.RESTBuilder.Actions_Change = function () {
 	var selectedAction = $("#Actions option:selected").val();
-	var action = $.grep(Xrm.RESTBuilder.Actions, function (e) { return e.Name === selectedAction && e.Entity === $("#EntityList option:selected").attr("LogicalName"); });
+	var action = $.grep(Xrm.RESTBuilder.Actions, function (e) {
+		return e.Name === selectedAction && e.Entity === $("#EntityList option:selected").attr("LogicalName");
+	});
 	if (action.length !== 1) {
 		$("#TargetId").attr("disabled", "disabled");
 		return;
@@ -6479,10 +6940,10 @@ Xrm.RESTBuilder.SortSelectItems = function (ctrl) {
 	$(ctrl).empty().html(selects);
 };
 
-Xrm.RESTBuilder.GetEntitySetName = function (name) {
-	var names = $.grep($("#EntityList option"), function (e) { return $(e).val() === name; });
-	if (names.length === 1) {
-		return $(names[0]).attr("entitysetname");
+Xrm.RESTBuilder.GetEntitySetName = function (logicalName) {
+	var entitySets = $.grep(Xrm.RESTBuilder.EntitySets, function (e) { return e.attributes.EntityType.value === "Microsoft.Dynamics.CRM." + logicalName; });
+	if (entitySets.length === 1) {
+		return entitySets[0].attributes.Name.value;
 	}
 	return "";
 }
@@ -6554,6 +7015,15 @@ Xrm.RESTBuilder.RemoveArrayDuplicates = function (input) {
 	}
 	return out;
 };
+
+Xrm.RESTBuilder.GetWebApi_StructuralProperty_Value = function (type) {
+	if (type.substr(0, 4) === "Edm.")
+		return 1;
+	if (type.substr(0, 11) === "Collection(")
+		return 4;
+	if (type.substr(0, 6) === "mscrm.")
+		return 5;
+}
 
 //Create REST String
 Xrm.RESTBuilder.REST_String = function (schemaOrLogicalName, value) {

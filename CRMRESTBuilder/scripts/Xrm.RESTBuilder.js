@@ -3157,6 +3157,8 @@ Xrm.RESTBuilder.Create_XrmWebApi_ActionRequest = function (action, operationType
 	var js = [];
 	var props = [];
 	for (var i = 0; i < action.Parameters.length; i++) {
+		if (params[i] === undefined)
+			continue;
 		props.push(action.Parameters[i].Name + ": " + params[i] + ",");
 	}
 	js.push("var " + requestName + " = {");
@@ -4883,6 +4885,9 @@ Xrm.RESTBuilder.BuildParameters = function (item) {
 				}
 		}
 	}
+
+	if (parameters.length === 1)
+		return null;
 
 	parameters.push("\n");
 	return parameters.join("");

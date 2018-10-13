@@ -5818,11 +5818,19 @@ Xrm.RESTBuilder.CreateRequest_Click = function () {
 			$("#tabs").tabs("disable", 1);
 			break;
 		case "PredefinedQuery":
-			var valid = Xrm.RESTBuilder.ValidateFetchXml(Xrm.RESTBuilder.FetchEditor.getValue());
-			if (!valid) {
-				Xrm.RESTBuilder.DisplayAlert("Invalid FetchXML");
-				return;
+			if ($("#PredefinedQueryType").val() === "FetchXML") {
+				var valid = Xrm.RESTBuilder.ValidateFetchXml(Xrm.RESTBuilder.FetchEditor.getValue());
+				if (!valid) {
+					Xrm.RESTBuilder.DisplayAlert("Invalid FetchXML");
+					return;
+				}
+				valid = Xrm.RESTBuilder.ValidateSelectedFetchXmlEntity();
+				if (!valid) {
+					Xrm.RESTBuilder.DisplayAlert("Mismatch between selected Primary Entity and FetchXML entity");
+					return;
+				}
 			}
+
 			Xrm.RESTBuilder.PredefinedQuery(Xrm.RESTBuilder.Library);
 			$("#tabs").tabs("enable", 1);
 			break;
@@ -6771,6 +6779,14 @@ Xrm.RESTBuilder.ResultFormat_Change = function () {
 //
 //Utility
 //
+
+Xrm.RESTBuilder.ValidateSelectedFetchXmlEntity = function () {
+	var xml = Xrm.RESTBuilder.FetchEditor.getValue();
+	var xmlDoc = $.parseXML(xml);
+	var $xml = $(xmlDoc);
+	var $entityName = $xml.find("entity").attr("name");
+	return Xrm.RESTBuilder.EntityLogical === $entityName.toLowerCase();
+}
 
 Xrm.RESTBuilder.Alert = function () {
 	if (Xrm.RESTBuilder.CrmVersion[0] < 6) {

@@ -4080,6 +4080,7 @@ Xrm.RESTBuilder.BuildObjectString = function () {
 				js.push(Xrm.RESTBuilder.REST_Picklist(field, sel1));
 				break;
 			case "Customer":
+			case "Owner":
 			case "Lookup":
 				js.push(Xrm.RESTBuilder.REST_Lookup(field, val1, sel1));
 				break;
@@ -4138,13 +4139,13 @@ Xrm.RESTBuilder.BuildObjectString_WebApi = function () {
 				js.push(Xrm.RESTBuilder.REST_Picklist_WebApi(logical, sel1));
 				break;
 			case "Customer":
+			case "Owner":
 			case "Lookup":
-				// var entitySetName = Xrm.RESTBuilder.GetEntitySetName(sel1);
-				var entitySetName = Xrm.RESTBuilder.GetEntitySetName(logical);
 				var relatedLogical = null;
-				if ($(tr).find("select:eq(1) option").size() > 1) {
+				if ($(tr).find("select:eq(1) option").size() >= 1) {
 					relatedLogical = $(tr).find("select:eq(1) option:selected").attr("logicalname");
 				}
+				var entitySetName = Xrm.RESTBuilder.GetEntitySetName(relatedLogical);
 				js.push(Xrm.RESTBuilder.REST_Lookup_WebApi(logical, val1, entitySetName, relatedLogical));
 				break;
 			case "DateTime":
@@ -4844,7 +4845,7 @@ Xrm.RESTBuilder.BuildParameters = function (item) {
 					var guidValue = $(tr).find("input:first").val();
 					if (parameter[0].Optional && guidValue === "")
 						continue;
-						
+
 					parameters.push(parameterName + "." + primaryIdAttribute + " = \"" + guidValue + "\"; //Delete if creating new record \n");
 					parameters.push(parameterName + "[\"@odata.type\"]" + " = \"Microsoft.Dynamics.CRM." + Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type) + "\";\n");
 					if (entityLogical.substr(0, 7) !== "REPLACE") {
@@ -6885,6 +6886,7 @@ Xrm.RESTBuilder.ApplyLookupTargets = function (ctrl, targets) {
 			$(options[i]).remove();
 		}
 	}
+	$(ctrl).removeAttr("selected").find("option:first").attr("selected", "selected");
 };
 
 //Create options from boolean
@@ -7061,7 +7063,7 @@ Xrm.RESTBuilder.REST_Lookup_WebApi = function (schemaOrLogicalName, id, entitySe
 		return e.attributes.Name.value.toLowerCase() === (schemaOrLogicalName + name).toLowerCase();
 	});
 	if (navProps.length === 0)
-		return output;
+		return "entity[\"" + schemaOrLogicalName + "@odata.bind\"] = \"/" + entitySetName + "(" + id + ")\";\n";
 
 	return "entity[\"" + navProps[0].attributes.Name.value + "@odata.bind\"] = \"/" + entitySetName + "(" + id + ")\";\n";
 };

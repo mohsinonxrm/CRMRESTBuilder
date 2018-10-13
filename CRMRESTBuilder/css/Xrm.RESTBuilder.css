@@ -340,9 +340,9 @@ body {
 }
 
 .HeaderImage {
-    height: 30px;
+    /* height: 30px; */
     margin-right: 5px;
-    width: 30px;
+    /* width: 30px; */
 }
 
 #InputParameters td:nth-child(3n+4) {
@@ -356,10 +356,11 @@ body {
 #Top {
     background-color: gainsboro;
     height: 40px;
+    padding-left: 10px;
 }
 
 .TopImage {
-    float: right;
+    float: left;
     margin-top: 5px;
 }
 

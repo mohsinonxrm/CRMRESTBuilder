@@ -5615,6 +5615,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 			$("#LibraryXrmWebApi").button("option", "disabled", true);
 			if ($("#LibraryXrmWebApi").is(":checked")) {
 				$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
+				Xrm.RESTBuilder.Library_Change();
 			}
 			if (Xrm.RESTBuilder.Endpoint === "WebApi") {
 				$("#FormattedValues").hide();
@@ -5631,6 +5632,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 			if ($("#LibrarySDKJQ").is(":checked")) {
 				$("#LibrarySDKJQ").prop("checked", "false").button("refresh");
 				$("#LibraryJQ").prop("checked", "true").button("refresh");
+				Xrm.RESTBuilder.Library_Change();
 			}
 			if (Xrm.RESTBuilder.AssociateEntityOneToManyRelationships.length === 0) {
 				Xrm.RESTBuilder.Block();
@@ -5644,6 +5646,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 			$("#LibraryXrmWebApi").button("option", "disabled", true);
 			if ($("#LibraryXrmWebApi").is(":checked")) {
 				$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
+				Xrm.RESTBuilder.Library_Change();
 			}
 			if (Xrm.RESTBuilder.FetchEditor) {
 				Xrm.RESTBuilder.FetchEditor.toTextArea();
@@ -5703,6 +5706,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 			$("#LibraryXrmWebApi").button("option", "disabled", true);
 			if ($("#LibraryXrmWebApi").is(":checked")) {
 				$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
+				Xrm.RESTBuilder.Library_Change();
 			}
 			break;
 	}

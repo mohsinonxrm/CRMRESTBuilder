@@ -1145,10 +1145,16 @@ Xrm.RESTBuilder.BuildFunctionList = function () {
 }
 
 Xrm.RESTBuilder.IsParameterEntity = function (type) {
-	return (type.indexOf("mscrm.") === 0);
+	if (type.indexOf("Collection(") === 0)
+		return false;
+	if (type.indexOf("mscrm.") !== 0)
+		return false;
+	return (type.charAt(6) === type.charAt(6).toLowerCase());
 }
 
 Xrm.RESTBuilder.IsParameterCollection = function (type) {
+	if (type.indexOf("mscrm.") === 0)
+		return false;
 	return (type.indexOf("Collection(") === 0);
 }
 
@@ -1201,6 +1207,7 @@ Xrm.RESTBuilder.CreateInputParameters = function (item) {
 			case "Edm.Int32":
 			case "Edm.Int64":
 				ctrl = "<input type='text' id='" + item.Parameters[i].Name + "' class='Integer ui-corner-all' placeholder='Integer' />";
+				Xrm.RESTBuilder.MakeSpinner(-2147483647, 2147483647, 1, item.Parameters[i].Name);
 				break;
 			case "Edm.Binary":
 			case "Edm.String":
@@ -1210,19 +1217,15 @@ Xrm.RESTBuilder.CreateInputParameters = function (item) {
 				ctrl = "<input type='text' class='Guid focus ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />";
 				break;
 			default:
-				if (Xrm.RESTBuilder.IsParameterEntity(item.Parameters[i].Type)) {
-					//Entity 
-					ctrl = "<span>" + Xrm.RESTBuilder.ConvertCollectionName(item.Parameters[i].Type) + " Entity</span>";
-				} else if (Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type)) {
-					//Collection of entities
-					ctrl = "<span>" + Xrm.RESTBuilder.ConvertCollectionName(item.Parameters[i].Type) + "</span>";
+				if (Xrm.RESTBuilder.IsParameterEntity(item.Parameters[i].Type) || Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type)) {
+					ctrl = "<input type='text' class='Guid focus ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />";
 				} else {
-					ctrl = "<span>" + item.Parameters[i].Type + " Not Handled</span>";
+					ctrl = "<span>Not Handled</span>";
 				}
 				break;
 		}
 
-		$("#InputParameters tbody").append("<tr><td>" + item.Parameters[i].Name + "</td><td>" + ctrl + "</td><td>" + item.Parameters[i].Optional + "</td>" +
+		$("#InputParameters tbody").append("<tr><td>" + item.Parameters[i].Name + "</td><td><nobr>" + ctrl + "</td><td>" + item.Parameters[i].Type + "</td><td>" + item.Parameters[i].Optional + "</td>" +
 			"<td><input type='checkbox' class='ParameterInclude' " + ((item.Parameters[i].Optional) ? "" : "checked disabled") + " /></td></tr>");
 	}
 
@@ -1751,7 +1754,7 @@ Xrm.RESTBuilder.Delete_jQuery_WebApi = function () {
 Xrm.RESTBuilder.Delete_XrmWebApi_WebApi = function () {
 	var js = [];
 	// Xrm.WebApi doesn't support using alternate keys yet
-	js.push("Xrm.WebApi.deleteRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + $("#DeleteId").val() + "\").then(\n");
+	js.push("Xrm.WebApi.online.deleteRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + $("#DeleteId").val() + "\").then(\n");
 	js.push("    function success(result) {\n");
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
@@ -2013,7 +2016,7 @@ Xrm.RESTBuilder.Create_jQuery_WebApi = function (js) {
 };
 
 Xrm.RESTBuilder.Create_XrmWebApi_WebApi = function (js) {
-	js.push("Xrm.WebApi.createRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", entity).then(\n");
+	js.push("Xrm.WebApi.online.createRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", entity).then(\n");
 	js.push("    function success(result) {");
 	js.push("        var newEntityId = result.id;");
 	js.push("    },");
@@ -2246,7 +2249,7 @@ Xrm.RESTBuilder.Update_jQuery_WebApi = function (js) {
 
 Xrm.RESTBuilder.Update_XrmWebApi_WebApi = function (js) {
 	// Xrm.WebApi doesn't support using alternate keys yet
-	js.push("Xrm.WebApi.updateRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + $("#UpdateId").val() + "\", entity).then(\n");
+	js.push("Xrm.WebApi.online.updateRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + $("#UpdateId").val() + "\", entity).then(\n");
 	js.push("    function success(result) {");
 	js.push("        var updatedEntityId = result.id;");
 	js.push("    },");
@@ -2577,7 +2580,7 @@ Xrm.RESTBuilder.Retrieve_XrmWebApi_WebApi = function (selects, expand) {
 	var js = [];
 	// Xrm.WebApi doesn't support using alternate keys yet
 	var seft = Xrm.RESTBuilder.BuildRESTString(selects, expand, null, null, null, null);
-	js.push("Xrm.WebApi.retrieveRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + $("#RetrieveId").val() + "\", \"" + seft + "\").then(\n");
+	js.push("Xrm.WebApi.online.retrieveRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + $("#RetrieveId").val() + "\", \"" + seft + "\").then(\n");
 	js.push("    function success(result) {");
 	js.push(Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 4));
 	js.push("    },");
@@ -2843,7 +2846,7 @@ Xrm.RESTBuilder.RetrieveMultiple_XrmWebApi_WebApi = function (selects, expand, f
 	var js = [];
 	var seft = Xrm.RESTBuilder.BuildRESTString_WebApi(selects, expand, filter, orderby, count, top);
 	seft = (seft !== null) ? "\"" + seft + "\"" : "null";
-	js.push("Xrm.WebApi.retrieveMultipleRecords(\"" + Xrm.RESTBuilder.EntityLogical + "\", " + seft + ").then(\n");
+	js.push("Xrm.WebApi.online.retrieveMultipleRecords(\"" + Xrm.RESTBuilder.EntityLogical + "\", " + seft + ").then(\n");
 	js.push("    function success(results) {");
 	var resultVars = Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 4);
 	resultVars = resultVars.replace(new RegExp("results.value", "g"), "results.entities");
@@ -3126,7 +3129,7 @@ Xrm.RESTBuilder.Action_Function_XrmWebApi = function (action, parameters, operat
 	}
 	var requestName = action["Name"].charAt(0).toLowerCase() + action["Name"].substr(1) + "Request";
 	js.push(Xrm.RESTBuilder.Create_XrmWebApi_ActionRequest(action, operationType, params, requestName));
-	js.push("Xrm.WebApi.execute(" + requestName + ").then(\n");
+	js.push("Xrm.WebApi.online.execute(" + requestName + ").then(\n");
 	js.push("    function success(result) {");
 	js.push("        if (result.ok) {\n");
 	if (action.ReturnTypes.length > 0)
@@ -4838,7 +4841,11 @@ Xrm.RESTBuilder.BuildParameters = function (item) {
 						parameterName = parameterName + "1";
 
 					parameters.push("var " + parameterName + " = {};\n");
-					parameters.push(parameterName + "." + primaryIdAttribute + " = \"00000000-0000-0000-0000-000000000000\"; //Delete if creating new record \n");
+					var guidValue = $(tr).find("input:first").val();
+					if (parameter[0].Optional && guidValue === "")
+						continue;
+						
+					parameters.push(parameterName + "." + primaryIdAttribute + " = \"" + guidValue + "\"; //Delete if creating new record \n");
 					parameters.push(parameterName + "[\"@odata.type\"]" + " = \"Microsoft.Dynamics.CRM." + Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type) + "\";\n");
 					if (entityLogical.substr(0, 7) !== "REPLACE") {
 						var entities = $.grep(Xrm.RESTBuilder.EntityMetadata, function (e) { return e.LogicalName === entityLogical; });
@@ -6476,77 +6483,8 @@ Xrm.RESTBuilder.Attribute_Change = function () {
 	}
 	if (attribute.length > 0) {
 		if (Xrm.RESTBuilder.Type === "Create" || Xrm.RESTBuilder.Type === "Update") {
-			$(tr).find("td:eq(2)").empty();
 			$(tr).find("td:eq(3)").empty();
-			switch (attribute[0].AttributeType) {
-				case "Decimal":
-				case "Double":
-					$(tr).find("td:eq(2)").html("<input type='text' id='" + attribute[0].LogicalName + "' class='Decimal ui-corner-all' placeholder='" + attribute[0].AttributeType + " (" + attribute[0].Precision + " digits)' />");
-					Xrm.RESTBuilder.MakeSpinner(attribute[0].MinValue, attribute[0].MaxValue, 1, attribute[0].LogicalName);
-					break;
-				case "BigInt":
-				case "Integer":
-					$(tr).find("td:eq(2)").html("<input type='text' id='" + attribute[0].LogicalName + "' class='Integer ui-corner-all' placeholder='" + attribute[0].AttributeType + "' />");
-					Xrm.RESTBuilder.MakeSpinner(attribute[0].MinValue, attribute[0].MaxValue, 1, attribute[0].LogicalName);
-					break;
-				case "Money":
-					$(tr).find("td:eq(2)").html("<input type='text' id='" + attribute[0].LogicalName + "' class='Money ui-corner-all' placeholder='" + attribute[0].AttributeType + " (" + attribute[0].Precision + " digits)' />");
-					Xrm.RESTBuilder.MakeSpinner(attribute[0].MinValue, attribute[0].MaxValue, 1, attribute[0].LogicalName);
-					break;
-				case "Uniqueidentifier":
-					$(tr).find("td:eq(2)").html("<input type='text' class='Uniqueidentifier ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />");
-					break;
-				case "Memo":
-				case "String":
-					$(tr).find("td:eq(2)").html("<input type='text' class='String ui-corner-all ui-widget' maxlength='" + attribute[0].MaxLength + "' placeholder='" + attribute[0].AttributeType + "' />");
-					break;
-				case "Boolean":
-					var boolItems1 = Xrm.RESTBuilder.CreateBooleanSelects(attribute[0].OptionSet);
-					$(tr).find("td:eq(2)").html("<select class='Boolean ui-corner-all'>" + boolItems1 + "</select>");
-					Xrm.RESTBuilder.SortSelect($(tr).find("td:eq(2)").find("select"));
-					$(tr).find("td:eq(2)").find("select")[0].selectedIndex = -1;
-					break;
-				case "State":
-				case "Status":
-				case "Picklist":
-					var osItems1 = Xrm.RESTBuilder.CreateOptionsetSelects(attribute[0].OptionSet.Options);
-					$(tr).find("td:eq(2)").html("<select class='Picklist ui-corner-all'>" + osItems1 + "</select>");
-					Xrm.RESTBuilder.SortSelect($(tr).find("td:eq(2)").find("select"));
-					$(tr).find("td:eq(2)").find("select")[0].selectedIndex = -1;
-					break;
-				case "Owner":
-				case "Customer":
-				case "Lookup":
-					$(tr).find("td:eq(2)").html("<input type='text' class='Guid ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />");
-					$(tr).find("td:eq(3)").append($("#EntityList").clone().attr("id", null));
-					Xrm.RESTBuilder.ApplyLookupTargets($(tr).find("select:eq(1)"), attribute[0].Targets);
-					break;
-				case "DateTime":
-					$(tr).find("td:eq(2)").html("<input type='text' class='DateTime ui-corner-all' />");
-					if (attribute[0].Format === "DateAndTime") {
-						$(tr).find("td:eq(2)").append(Xrm.RESTBuilder.CreateTimePicker());
-					}
-					Xrm.RESTBuilder.MakeDatePicker("DateTime");
-					break;
-				case "EntityName":
-					var entityOptions = $("#EntityList option");
-					var options;
-					for (var j = 0; j < entityOptions.length; j++) {
-						options += $(entityOptions[j]).prop("outerHTML");
-					}
-					$(tr).find("td:eq(2)").html("<select class='Picklist ui-corner-all'>" + options + "</select>");
-					Xrm.RESTBuilder.SortSelect($(tr).find("td:eq(2)").find("select"));
-					//Special case: add a "None" option to the entity list
-					if (Xrm.RESTBuilder.EntityLogical === "workflow" && attribute[0].LogicalName === "primaryentity") {
-						$($(tr).find("td:eq(2)").find("select")[0]).prepend("<option entitysetname='' logicalname='none' objecttypecode='' value='None' title='None'>None</option>");
-					}
-					$(tr).find("td:eq(2)").find("select")[0].selectedIndex = -1;
-					break;
-			}
-		} else {
-			$(tr).find("td:eq(2)").empty();
-			$(tr).find("td:eq(3)").empty();
-			$(tr).find("td:eq(2)").html(Xrm.RESTBuilder.CreateFilterSelect(attribute[0].AttributeType));
+			$(tr).find("td:eq(4)").empty();
 			switch (attribute[0].AttributeType) {
 				case "Decimal":
 				case "Double":
@@ -6570,37 +6508,41 @@ Xrm.RESTBuilder.Attribute_Change = function () {
 					$(tr).find("td:eq(3)").html("<input type='text' class='String ui-corner-all ui-widget' maxlength='" + attribute[0].MaxLength + "' placeholder='" + attribute[0].AttributeType + "' />");
 					break;
 				case "Boolean":
-					var boolItems2 = Xrm.RESTBuilder.CreateBooleanSelects(attribute[0].OptionSet);
-					$(tr).find("td:eq(3)").html("<select class='Boolean ui-corner-all'>" + boolItems2 + "</select>");
+					var boolItems1 = Xrm.RESTBuilder.CreateBooleanSelects(attribute[0].OptionSet);
+					$(tr).find("td:eq(3)").html("<select class='Boolean ui-corner-all'>" + boolItems1 + "</select>");
+					Xrm.RESTBuilder.SortSelect($(tr).find("td:eq(3)").find("select"));
 					$(tr).find("td:eq(3)").find("select")[0].selectedIndex = -1;
 					break;
 				case "State":
 				case "Status":
 				case "Picklist":
-					var osItems2 = Xrm.RESTBuilder.CreateOptionsetSelects(attribute[0].OptionSet.Options);
-					$(tr).find("td:eq(3)").html("<select class='Picklist ui-corner-all'>" + osItems2 + "</select>");
+					var osItems1 = Xrm.RESTBuilder.CreateOptionsetSelects(attribute[0].OptionSet.Options);
+					$(tr).find("td:eq(3)").html("<select class='Picklist ui-corner-all'>" + osItems1 + "</select>");
+					Xrm.RESTBuilder.SortSelect($(tr).find("td:eq(3)").find("select"));
 					$(tr).find("td:eq(3)").find("select")[0].selectedIndex = -1;
 					break;
 				case "Owner":
 				case "Customer":
 				case "Lookup":
 					$(tr).find("td:eq(3)").html("<input type='text' class='Guid ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />");
+					$(tr).find("td:eq(4)").append($("#EntityList").clone().attr("id", null));
+					Xrm.RESTBuilder.ApplyLookupTargets($(tr).find("select:eq(1)"), attribute[0].Targets);
 					break;
 				case "DateTime":
-					$(tr).find("td:eq(3)").html("<input type='text' class='DateTime ui-corner-all' placeholder='" + attribute[0].AttributeType + "' />");
-					if (attribute[0].Format === "DateAndTime") {
-						$(tr).find(".DateTime").css("width", "176px");
+					var isDateTime = attribute[0].Format === "DateAndTime";
+					$(tr).find("td:eq(3)").html("<input type='text' class='" + (isDateTime ? "DateTime" : "Date") + " ui-corner-all' />");
+					if (isDateTime)
 						$(tr).find("td:eq(3)").append(Xrm.RESTBuilder.CreateTimePicker());
-					}
-					Xrm.RESTBuilder.MakeDatePicker("DateTime");
+					Xrm.RESTBuilder.MakeDatePicker(isDateTime ? "DateTime" : "Date");
 					break;
 				case "EntityName":
-					var entityOptions2 = $("#EntityList option");
-					var options2;
-					for (var i = 0; i < entityOptions2.length; i++) {
-						options2 += $(entityOptions2[i]).prop("outerHTML");
+					var entityOptions = $("#EntityList option");
+					var options;
+					for (var j = 0; j < entityOptions.length; j++) {
+						options += $(entityOptions[j]).prop("outerHTML");
 					}
-					$(tr).find("td:eq(3)").html("<select class='Picklist ui-corner-all'>" + options2 + "</select>");
+					$(tr).find("td:eq(3)").html("<select class='Picklist ui-corner-all'>" + options + "</select>");
+					Xrm.RESTBuilder.SortSelect($(tr).find("td:eq(3)").find("select"));
 					//Special case: add a "None" option to the entity list
 					if (Xrm.RESTBuilder.EntityLogical === "workflow" && attribute[0].LogicalName === "primaryentity") {
 						$($(tr).find("td:eq(3)").find("select")[0]).prepend("<option entitysetname='' logicalname='none' objecttypecode='' value='None' title='None'>None</option>");
@@ -6608,10 +6550,76 @@ Xrm.RESTBuilder.Attribute_Change = function () {
 					$(tr).find("td:eq(3)").find("select")[0].selectedIndex = -1;
 					break;
 			}
+			$(tr).find("td:eq(2)").html(attribute[0].AttributeType);
+		} else {
+			$(tr).find("td:eq(3)").empty();
+			$(tr).find("td:eq(4)").empty();
+			$(tr).find("td:eq(3)").html(Xrm.RESTBuilder.CreateFilterSelect(attribute[0].AttributeType));
+			switch (attribute[0].AttributeType) {
+				case "Decimal":
+				case "Double":
+					$(tr).find("td:eq(4)").html("<input type='text' id='" + attribute[0].LogicalName + "' class='Decimal ui-corner-all' placeholder='" + attribute[0].AttributeType + " (" + attribute[0].Precision + " digits)' />");
+					Xrm.RESTBuilder.MakeSpinner(attribute[0].MinValue, attribute[0].MaxValue, 1, attribute[0].LogicalName);
+					break;
+				case "BigInt":
+				case "Integer":
+					$(tr).find("td:eq(4)").html("<input type='text' id='" + attribute[0].LogicalName + "' class='Integer ui-corner-all' placeholder='" + attribute[0].AttributeType + "' />");
+					Xrm.RESTBuilder.MakeSpinner(attribute[0].MinValue, attribute[0].MaxValue, 1, attribute[0].LogicalName);
+					break;
+				case "Money":
+					$(tr).find("td:eq(4)").html("<input type='text' id='" + attribute[0].LogicalName + "' class='Money ui-corner-all' placeholder='" + attribute[0].AttributeType + " (" + attribute[0].Precision + " digits)' />");
+					Xrm.RESTBuilder.MakeSpinner(attribute[0].MinValue, attribute[0].MaxValue, 1, attribute[0].LogicalName);
+					break;
+				case "Uniqueidentifier":
+					$(tr).find("td:eq(4)").html("<input type='text' class='Uniqueidentifier ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />");
+					break;
+				case "Memo":
+				case "String":
+					$(tr).find("td:eq(4)").html("<input type='text' class='String ui-corner-all ui-widget' maxlength='" + attribute[0].MaxLength + "' placeholder='" + attribute[0].AttributeType + "' />");
+					break;
+				case "Boolean":
+					var boolItems2 = Xrm.RESTBuilder.CreateBooleanSelects(attribute[0].OptionSet);
+					$(tr).find("td:eq(4)").html("<select class='Boolean ui-corner-all'>" + boolItems2 + "</select>");
+					$(tr).find("td:eq(4)").find("select")[0].selectedIndex = -1;
+					break;
+				case "State":
+				case "Status":
+				case "Picklist":
+					var osItems2 = Xrm.RESTBuilder.CreateOptionsetSelects(attribute[0].OptionSet.Options);
+					$(tr).find("td:eq(4)").html("<select class='Picklist ui-corner-all'>" + osItems2 + "</select>");
+					$(tr).find("td:eq(4)").find("select")[0].selectedIndex = -1;
+					break;
+				case "Owner":
+				case "Customer":
+				case "Lookup":
+					$(tr).find("td:eq(4)").html("<input type='text' class='Guid ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />");
+					break;
+				case "DateTime":
+					var isDateTime = attribute[0].Format === "DateAndTime";
+					$(tr).find("td:eq(4)").html("<input type='text' class='" + (isDateTime ? "DateTime" : "Date") + " ui-corner-all' placeholder='" + attribute[0].AttributeType + "' />");
+					if (isDateTime)
+						$(tr).find("td:eq(4)").append(Xrm.RESTBuilder.CreateTimePicker());
+					Xrm.RESTBuilder.MakeDatePicker(isDateTime ? "DateTime" : "Date");
+					break;
+				case "EntityName":
+					var entityOptions2 = $("#EntityList option");
+					var options2;
+					for (var i = 0; i < entityOptions2.length; i++) {
+						options2 += $(entityOptions2[i]).prop("outerHTML");
+					}
+					$(tr).find("td:eq(4)").html("<select class='Picklist ui-corner-all'>" + options2 + "</select>");
+					//Special case: add a "None" option to the entity list
+					if (Xrm.RESTBuilder.EntityLogical === "workflow" && attribute[0].LogicalName === "primaryentity") {
+						$($(tr).find("td:eq(3)").find("select")[0]).prepend("<option entitysetname='' logicalname='none' objecttypecode='' value='None' title='None'>None</option>");
+					}
+					$(tr).find("td:eq(4)").find("select")[0].selectedIndex = -1;
+					break;
+			}
+			$(tr).find("td:eq(2)").html(attribute[0].AttributeType);
 		}
 
 		if (Xrm.RESTBuilder.Type === "RetrieveMultiple") {
-			$(tr).find("td:eq(4)").empty().html("<select class='Logical ui-corner-all'><option value='and' selected='selected'>And</option><option value='or'>Or</option></select>");
+			$(tr).find("td:eq(5)").empty().html("<select class='Logical ui-corner-all'><option value='and' selected='selected'>And</option><option value='or'>Or</option></select>");
 		}
 		$(tr).find(".SelectAttribute").button("option", "disabled", false);
 	}
@@ -6623,9 +6631,9 @@ Xrm.RESTBuilder.Attribute_Change = function () {
 
 Xrm.RESTBuilder.Filter_Change = function () {
 	var tr = $(this).parent().parent();
-	var val = $(tr).find("td:eq(3) input:first");
-	var sel1 = $(tr).find("td:eq(3) select:first");
-	var sel2 = $(tr).find("td:eq(3) select:last");
+	var val = $(tr).find("td:eq(4) input:first");
+	var sel1 = $(tr).find("td:eq(4) select:first");
+	var sel2 = $(tr).find("td:eq(4) select:last");
 
 	//Is the value the input or select field
 	var ctrl1 = (val.length !== 0) ? val : sel1;

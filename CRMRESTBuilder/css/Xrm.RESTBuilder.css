@@ -28,7 +28,6 @@ input[type=text] {
     font-size: 95%;
     height: 24px;
     line-height: 24px;
-    width: 285px;
 }
 
 .AddAttribute, .AddOrderBy {
@@ -62,11 +61,6 @@ input[type=text] {
     height: 28px;
 }
 
-.Uniqueidentifier {
-    text-align: center;
-    width: 285px !important;
-}
-
 .clear {
     clear: both;
 }
@@ -77,8 +71,30 @@ input[type=text] {
     width: 110px !important;
 }
 
-.Guid {
+.Guid, .Uniqueidentifier {
     height: 24px;
+    width: 290px;
+    text-align: center;
+}
+
+.String, .Date  {
+    width: 290px;
+}
+
+.Integer, .Decimal, .Money {
+    width: 265px;
+}
+
+.Boolean, .Picklist {
+    width: 293px;
+}
+
+.DateTime {
+    width: 175px;
+}
+
+.Time {
+    width: 115px;
 }
 
 #RetrieveSelects {
@@ -88,7 +104,12 @@ input[type=text] {
 
 #RetrieveId, #DeleteId, #UpdateId, #AssociateId1, #AssociateId2, #QueryId, #ImpersonateId, #TargetId {
     text-align: center;
-    width: 285px;
+    width: 290px;
+    text-align: center;
+}
+
+.Filter {
+    width: 192px;
 }
 
 .selectlist {
@@ -324,7 +345,7 @@ body {
     width: 30px;
 }
 
-#InputParameters td:nth-child(3n+3) {
+#InputParameters td:nth-child(3n+4) {
     text-align: center;
 }
 

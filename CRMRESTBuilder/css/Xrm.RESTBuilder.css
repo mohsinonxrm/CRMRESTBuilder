@@ -201,7 +201,7 @@ td {
     margin-right: 12px;
 }
 
-#RESTType2, #RESTLibrary, #Header, #FormattedValues, #DetectChanges, #AuthToken, #Count, #ActionDefinition, #FunctionDefinition, #TargetDefinition {
+#RESTType2, #RESTLibrary, #Header, #FormattedValues, #DetectChanges, #AuthToken, #RecordCount, #ActionDefinition, #FunctionDefinition, #TargetDefinition {
     margin-bottom: 5px;
 }
 
@@ -389,7 +389,7 @@ body {
         vertical-align: middle;
     }
 
-#ImpersonateId, #RetrieveExtras, #Count, #RetrieveFilters, #OrderBy, #CreateUpdate, #UpdateGUID, #Delete, #AssociateDisassociate,
+#ImpersonateId, #RetrieveExtras, #RecordCount, #RetrieveFilters, #OrderBy, #CreateUpdate, #UpdateGUID, #Delete, #AssociateDisassociate,
 #PredefinedQuery, #SavedUserQuery, #NextLink, #Message, #ActionDefinition, #FunctionDefinition, #Output, #ResponseObject {
     display: none;
 }

@@ -97,7 +97,7 @@ $(function () {
 	Xrm.RESTBuilder.CreateRadioButtons($("#Impersonate"));
 	Xrm.RESTBuilder.CreateRadioButtons($("#ReturnRecord"));
 	Xrm.RESTBuilder.CreateRadioButtons($("#ResultType"));
-	Xrm.RESTBuilder.CreateRadioButtons($("#Count"));
+	Xrm.RESTBuilder.CreateRadioButtons($("#RecordCount"));
 	Xrm.RESTBuilder.CreateRadioButtons($("#PreventCreate"));
 	Xrm.RESTBuilder.CreateRadioButtons($("#PreventUpdate"));
 	Xrm.RESTBuilder.SetTopMax();
@@ -120,7 +120,7 @@ $(function () {
 	$("#RESTType2 input[name=Type]:radio").change(Xrm.RESTBuilder.Type_Change);
 	$("#RESTLibrary input[name=Library]:radio").change(Xrm.RESTBuilder.Library_Change);
 	$("#Async input[name=Async]:radio").change(Xrm.RESTBuilder.Async_Change);
-	$("#Count input[name=Count]:radio").change(Xrm.RESTBuilder.Count_Change);
+	$("#RecordCount input[name=Count]:radio").change(Xrm.RESTBuilder.Count_Change);
 	$("#DetectChanges input[name=DetectChanges]:radio").change(Xrm.RESTBuilder.DetectChanges_Change);
 	$("#AuthToken input[name=AuthToken]:radio").change(Xrm.RESTBuilder.AuthToken_Change);
 	$("#Impersonate input[name=Impersonate]:radio").change(Xrm.RESTBuilder.Impersonate_Change);
@@ -1217,7 +1217,14 @@ Xrm.RESTBuilder.CreateInputParameters = function (item) {
 				ctrl = "<input type='text' class='Guid focus ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />";
 				break;
 			default:
-				if (Xrm.RESTBuilder.IsParameterEntity(item.Parameters[i].Type) || Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type)) {
+				if (item.Parameters[i].Type === "Collection(Edm.String)") {
+					ctrl = "<input type='text' class='String ui-corner-all ui-widget' />";
+				}
+				else if (item.Parameters[i].Type === "Collection(Edm.Int32)") {
+					ctrl = "<input type='text' id='" + item.Parameters[i].Name + "' class='Integer ui-corner-all' placeholder='Integer' />";
+					Xrm.RESTBuilder.MakeSpinner(-2147483647, 2147483647, 1, item.Parameters[i].Name);
+				}
+				else if (Xrm.RESTBuilder.IsParameterEntity(item.Parameters[i].Type) || Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type)) {
 					ctrl = "<input type='text' class='Guid focus ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />";
 				} else {
 					ctrl = "<span>Not Handled</span>";
@@ -3053,13 +3060,14 @@ Xrm.RESTBuilder.Action_XMLHTTP_WebApi = function (action, parameters) {
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
-	if (parameters) {
+	if (parameters)
 		js.push("req.send(JSON.stringify(parameters));");
-	} else {
+	else
 		js.push("req.send();");
-	}
-
-	Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(this.response);";
+	if (action.ReturnTypes.length > 0)
+		Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(this.response);"
+	else
+		Xrm.RESTBuilder.ReplaceLine = "//Success - No Return Data - Do Something\n";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -3094,24 +3102,20 @@ Xrm.RESTBuilder.Action_jQuery_WebApi = function (action, parameters) {
 	js.push("    },");
 	js.push("    async: " + Xrm.RESTBuilder.Async + ",");
 	js.push("    success: function(data, textStatus, xhr) {\n");
-	if (action.ReturnTypes.length > 0) {
+	if (action.ReturnTypes.length > 0)
 		js.push("        var results = data;");
-	}
-	else {
+	else
 		js.push("        //Success - No Return Data - Do Something\n");
-	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
 	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
 	js.push("    }");
 	js.push("});");
 
-	if (action.ReturnTypes.length > 0) {
+	if (action.ReturnTypes.length > 0)
 		Xrm.RESTBuilder.ReplaceLine = "var results = data;";
-	}
-	else {
+	else
 		Xrm.RESTBuilder.ReplaceLine = "//Success - No Return Data - Do Something\n";
-	}
 	Xrm.RESTBuilder.ErrorReplaceLine = "error: function(xhr, textStatus, errorThrown) {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -3143,7 +3147,10 @@ Xrm.RESTBuilder.Action_Function_XrmWebApi = function (action, parameters, operat
 	js.push("    }\n");
 	js.push(");");
 
-	Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(result.responseText);";
+	if (action.ReturnTypes.length > 0)
+		Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(result.responseText);"
+	else
+		Xrm.RESTBuilder.ReplaceLine = "//Success - No Return Data - Do Something\n";
 	Xrm.RESTBuilder.ErrorReplaceLine = "function(error) {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 }
@@ -3156,10 +3163,11 @@ Xrm.RESTBuilder.Create_XrmWebApi_ActionRequest = function (action, operationType
 	// operationType [action = 0, function = 1, CRUD = 2]
 	var js = [];
 	var props = [];
-	for (var i = 0; i < action.Parameters.length; i++) {
-		if (params[i] === undefined)
-			continue;
-		props.push(action.Parameters[i].Name + ": " + params[i] + ",");
+	for (var i = 0; i < params.length; i++) {
+		$.grep(action.Parameters, function (e) {
+			if ("parameters." + e.Name === params[i])
+				props.push(e.Name + ": " + params[i] + ",");
+		});
 	}
 	js.push("var " + requestName + " = {");
 	if (props.length > 0)
@@ -3175,6 +3183,9 @@ Xrm.RESTBuilder.Create_XrmWebApi_ActionRequest = function (action, operationType
 	js.push("parameterTypes: {");
 	var parameterTypes = [];
 	for (var i = 0; i < action.Parameters.length; i++) {
+		var ps = $.grep(params, function (e) { return e.replace("parameters.", "") === action.Parameters[i].Name });
+		if (ps.length === 0)
+			continue;
 		var parameterType = [];
 		parameterType.push("\"" + action.Parameters[i].Name + "\": {")
 		parameterType.push("\"typeName\": \"" + action.Parameters[i].Type + "\",")
@@ -3190,14 +3201,17 @@ Xrm.RESTBuilder.Create_XrmWebApi_ActionRequest = function (action, operationType
 
 Xrm.RESTBuilder.Function_XMLHTTP_WebApi = function (func, parameters) {
 	var js = [];
-	js.push(parameters);
 	js.push("var req = new XMLHttpRequest();");
 	js.push("req.open(\"GET\", Xrm.Page.context.getClientUrl() + \"/api/data/v" + $("#WebApiVersion option:selected").val() + "/");
 	if (func.Entity === "none") { //Unbound
-		js.push(func.Name + "()");
+		js.push(func.Name);
 	} else { //Bound
 		js.push(Xrm.RESTBuilder.EntitySetName + "(" + $("#TargetId").val() + ")/Microsoft.Dynamics.CRM." + func.Name);
 	}
+	if (parameters)
+		js.push("(" + Xrm.RESTBuilder.CreateGetParameterAliases(parameters) + ")?" + parameters);
+	else
+		js.push("()");
 	js.push("\", " + Xrm.RESTBuilder.Async + ");");
 	js.push("req.setRequestHeader(\"OData-MaxVersion\", \"4.0\");");
 	js.push("req.setRequestHeader(\"OData-Version\", \"4.0\");");
@@ -3217,7 +3231,7 @@ Xrm.RESTBuilder.Function_XMLHTTP_WebApi = function (func, parameters) {
 		js.push("            var results = JSON.parse(this.response);");
 	} else {
 		js.push("        if (this.status === 204) {");
-		js.push("            //Success - No Return Data - Do Something");
+		js.push("            //Success - No Return Data - Do Something\n");
 	}
 	js.push("        }");
 	js.push("        else {");
@@ -3225,34 +3239,33 @@ Xrm.RESTBuilder.Function_XMLHTTP_WebApi = function (func, parameters) {
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
-	if (parameters) {
-		js.push("req.send(JSON.stringify(parameters));");
-	} else {
-		js.push("req.send();");
-	}
+	js.push("req.send();");
 
-	Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(this.response);";
+	if (func.ReturnTypes.length > 0)
+		Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(this.response);"
+	else
+		Xrm.RESTBuilder.ReplaceLine = "//Success - No Return Data - Do Something\n";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
 
 Xrm.RESTBuilder.Function_jQuery_WebApi = function (func, parameters) {
 	var js = [];
-	js.push(parameters);
 	js.push("$.ajax({");
 	js.push("    type: \"GET\",");
 	js.push("    contentType: \"application/json; charset=utf-8\",");
 	js.push("    datatype: \"json\",");
 	js.push("    url: " + "Xrm.Page.context.getClientUrl() + " + "\"/api/data/v" + $("#WebApiVersion option:selected").val() + "/");
 	if (func.Entity === "none") { //Unbound
-		js.push(func.Name + "()");
+		js.push(func.Name);
 	} else { //Bound
 		js.push(Xrm.RESTBuilder.EntitySetName + "(" + $("#TargetId").val() + ")/Microsoft.Dynamics.CRM." + func.Name);
 	}
+	if (parameters)
+		js.push("(" + Xrm.RESTBuilder.CreateGetParameterAliases(parameters) + ")?" + parameters);
+	else
+		js.push("()");
 	js.push("\",");
-	if (parameters) {
-		js.push("    data: JSON.stringify(parameters),");
-	}
 	js.push("    beforeSend: function(XMLHttpRequest) {");
 	js.push("        XMLHttpRequest.setRequestHeader(\"OData-MaxVersion\", \"4.0\");");
 	js.push("        XMLHttpRequest.setRequestHeader(\"OData-Version\", \"4.0\");");
@@ -3266,24 +3279,20 @@ Xrm.RESTBuilder.Function_jQuery_WebApi = function (func, parameters) {
 	js.push("    },");
 	js.push("    async: " + Xrm.RESTBuilder.Async + ",");
 	js.push("    success: function(data, textStatus, xhr) {\n");
-	if (func.ReturnTypes.length > 0) {
+	if (func.ReturnTypes.length > 0)
 		js.push("        var results = data;");
-	}
-	else {
+	else
 		js.push("        //Success - No Return Data - Do Something\n");
-	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
 	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
 	js.push("    }");
 	js.push("});");
 
-	if (func.ReturnTypes.length > 0) {
+	if (func.ReturnTypes.length > 0)
 		Xrm.RESTBuilder.ReplaceLine = "var results = data;";
-	}
-	else {
+	else
 		Xrm.RESTBuilder.ReplaceLine = "//Success - No Return Data - Do Something\n";
-	}
 	Xrm.RESTBuilder.ErrorReplaceLine = "error: function(xhr, textStatus, errorThrown) {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -3609,13 +3618,13 @@ Xrm.RESTBuilder.Action = function (library) {
 
 	switch (library) {
 		case "XMLHTTP":
-			Xrm.RESTBuilder.Action_XMLHTTP_WebApi(action, Xrm.RESTBuilder.BuildParameters(action));
+			Xrm.RESTBuilder.Action_XMLHTTP_WebApi(action, Xrm.RESTBuilder.BuildParameters(action, false));
 			break;
 		case "jQuery":
-			Xrm.RESTBuilder.Action_jQuery_WebApi(action, Xrm.RESTBuilder.BuildParameters(action));
+			Xrm.RESTBuilder.Action_jQuery_WebApi(action, Xrm.RESTBuilder.BuildParameters(action, false));
 			break;
 		case "XrmWebApi":
-			Xrm.RESTBuilder.Action_XrmWebApi_WebApi(action, Xrm.RESTBuilder.BuildParameters(action));
+			Xrm.RESTBuilder.Action_XrmWebApi_WebApi(action, Xrm.RESTBuilder.BuildParameters(action, false));
 			break;
 	}
 };
@@ -3629,13 +3638,13 @@ Xrm.RESTBuilder.Function = function (library) {
 
 	switch (library) {
 		case "XMLHTTP":
-			Xrm.RESTBuilder.Function_XMLHTTP_WebApi(func, Xrm.RESTBuilder.BuildParameters(func));
+			Xrm.RESTBuilder.Function_XMLHTTP_WebApi(func, Xrm.RESTBuilder.BuildParameters(func, true));
 			break;
 		case "jQuery":
-			Xrm.RESTBuilder.Function_jQuery_WebApi(func, Xrm.RESTBuilder.BuildParameters(func));
+			Xrm.RESTBuilder.Function_jQuery_WebApi(func, Xrm.RESTBuilder.BuildParameters(func, true));
 			break;
 		case "XrmWebApi":
-			Xrm.RESTBuilder.Function_XrmWebApi_WebApi(func, Xrm.RESTBuilder.BuildParameters(func));
+			Xrm.RESTBuilder.Function_XrmWebApi_WebApi(func, Xrm.RESTBuilder.BuildParameters(func, false));
 			break;
 	}
 };
@@ -4751,11 +4760,31 @@ Xrm.RESTBuilder.BuildOrderByString_WebApi = function () {
 	return (orderby !== "") ? "$orderby=" + orderby.slice(0, -1).trim() : null;
 };
 
-Xrm.RESTBuilder.BuildParameters = function (item) {
+Xrm.RESTBuilder.CreateGetParameter = function (name, value) {
+	value = encodeURIComponent(value);
+	value = value.replaceAll("'", "%27");
+	return "@" + name + "=" + value;
+}
+
+Xrm.RESTBuilder.CreateGetParameterAliases = function (parameters) {
+	if (!parameters)
+		return null;
+
+	var aliases = [];
+	var split = parameters.split("&")
+	for (var i = 0; i < split.length; i++) {
+		var name = split[i].split("=");
+		aliases.push(name[0].slice(1) + "=" + name[0]);
+	}
+	return aliases.join(",");
+}
+
+Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 	if (item.Parameters === null || item.Parameters === undefined || item.Parameters.length === 0)
 		return null;
 
 	var parameters = [];
+	var getParameters = [];
 	parameters.push("var parameters = {};\n");
 	if (item.IsBound && (item.Parameters[0].Name === "entity" || item.Parameters[0].Name === "entityset") && Xrm.RESTBuilder.Library === "XrmWebApi") {
 		parameters.push("var entity = {};\n");
@@ -4778,25 +4807,32 @@ Xrm.RESTBuilder.BuildParameters = function (item) {
 		switch (parameter[0].Type) {
 			case "Edm.Boolean":
 				var booleanValue = $(tr).find("select:first option:selected").val();
-				if (parameter[0].Optional && booleanValue === "")
-					continue;
+				if (!booleanValue)
+					booleanValue = "true";
 				parameters.push("parameters." + parameter[0].Name + " = " + booleanValue.toLowerCase() + ";\n");
+				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, booleanValue.toLowerCase()));
 				break;
 			case "Edm.DateTimeOffset":
 				var date = $(tr).find("input:first").val();
+				if (!date)
+					date = new Date().toLocaleDateString();
 				var time = $(tr).find("select:eq(0)").val();
 				var value = date + ((time !== "" && time !== undefined) ? " " + time : "");
-				parameters.push("parameters." + parameter[0].Name + " = new Date(\"" + value + "\").toISOString();\n");
+				if (Xrm.RESTBuilder.Library !== "XrmWebApi")
+					parameters.push("parameters." + parameter[0].Name + " = new Date(\"" + value + "\").toISOString();\n");
+				else // this is a workaround becase Xrm.WebApi doesn't wrap the date in quotes on the body otherwise and it errors
+					parameters.push("parameters." + parameter[0].Name + " = JSON.stringify(new Date(\"" + value + "\").toISOString());\n");
+				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, new Date(value).toISOString()));
 				break;
 			case "Edm.Double":
 			case "Edm.Decimal":
 			case "Edm.Int32":
 			case "Edm.Int64":
 				var numberValue = $(tr).find("input:first").val();
-				if (parameter[0].Optional && numberValue === "")
-					continue;
-				numberValue = (numberValue !== "" && numberValue !== undefined) ? numberValue : 0;
+				if (!numberValue)
+					numberValue = 0;
 				parameters.push("parameters." + parameter[0].Name + " = " + numberValue + ";\n");
+				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, numberValue));
 				break;
 			case "mscrm.Label":
 				var labelValue = $(tr).find("input:first").val();
@@ -4818,38 +4854,54 @@ Xrm.RESTBuilder.BuildParameters = function (item) {
 				parameters.push(parameter[0].Name.toLowerCase() + ".UserLocalizedLabel.MetadataId = \"" + Xrm.RESTBuilder.GenerateGuid() + "\";\n");
 				parameters.push(parameter[0].Name.toLowerCase() + ".UserLocalizedLabel.HasChanged = false;\n");
 				parameters.push("parameters." + parameter[0].Name + " = " + parameter[0].Name.toLowerCase() + ";\n");
+				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "Not Handled"));
 				break;
 			case "Edm.Binary":
 			case "Edm.String":
 				var stringValue = $(tr).find("input:first").val();
-				if (parameter[0].Optional && stringValue === "")
-					continue;
 				parameters.push("parameters." + parameter[0].Name + " = \"" + stringValue + "\";\n");
+				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "'" + stringValue + "'"));
 				break;
 			case "Edm.Guid":
 				var guidValue = $(tr).find("input:first").val();
-				if (parameter[0].Optional && guidValue === "")
-					continue;
+				if (!guidValue)
+					guidValue = "00000000-0000-0000-0000-000000000000";
 				parameters.push("parameters." + parameter[0].Name + " = \"" + guidValue + "\";\n");
+				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, guidValue));
 				break;
 			default:
-				if (Xrm.RESTBuilder.IsParameterEntity(parameter[0].Type) || Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type)) {
+				if (parameter[0].Type === "Collection(Edm.String)") {
+					var stringValue = $(tr).find("input:first").val();
+					parameters.push("parameters." + parameter[0].Name + " = [\"" + stringValue + "\"];\n");
+					getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "['" + stringValue + "']"));
+					// parameters.push("parameters." + parameter[0].Name + " = [" + parameter[0].Name.toLowerCase() + "];\n");
+				}
+				else if (parameter[0].Type === "Collection(Edm.Int32)") {
+					var numberValue = $(tr).find("input:first").val();
+					if (!numberValue)
+						numberValue = 0;
+					parameters.push("parameters." + parameter[0].Name + " = [" + numberValue + "];\n");
+					getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "[" + numberValue + "]"));
+					// parameters.push("parameters." + parameter[0].Name + " = [" + parameter[0].Name.toLowerCase() + "];\n");
+				}
+				else if (Xrm.RESTBuilder.IsParameterEntity(parameter[0].Type) || Xrm.RESTBuilder.IsParameterCollection(parameter[0].Type)) {
 					var entityLogical = Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type);
 					var primaryIdAttribute = Xrm.RESTBuilder.GetPrimaryIdAttribute(entityLogical);
 					if (primaryIdAttribute === "")
 						primaryIdAttribute = "REPLACE_WITH_PRIMARY_ID_ATTRIBUTE";
 
 					var parameterName = parameter[0].Name.toLowerCase();
-					if (Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type))
+					if (Xrm.RESTBuilder.IsParameterCollection(parameter[0].Type))
 						parameterName = parameterName + "1";
 
 					parameters.push("var " + parameterName + " = {};\n");
 					var guidValue = $(tr).find("input:first").val();
-					if (parameter[0].Optional && guidValue === "")
-						continue;
-
+					if (!guidValue)
+						guidValue = "00000000-0000-0000-0000-000000000000";
 					parameters.push(parameterName + "." + primaryIdAttribute + " = \"" + guidValue + "\"; //Delete if creating new record \n");
 					parameters.push(parameterName + "[\"@odata.type\"]" + " = \"Microsoft.Dynamics.CRM." + Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type) + "\";\n");
+					getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "{\"" + primaryIdAttribute + "\":\"" + guidValue + "\",\"@odata.type\":\"Microsoft.Dynamics.CRM."
+						+ Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type) + "\"}"));
 					if (entityLogical.substr(0, 7) !== "REPLACE") {
 						var entities = $.grep(Xrm.RESTBuilder.EntityMetadata, function (e) { return e.LogicalName === entityLogical; });
 						if (entities.length === 1) {
@@ -4877,7 +4929,7 @@ Xrm.RESTBuilder.BuildParameters = function (item) {
 					}
 					if (Xrm.RESTBuilder.IsParameterEntity(parameter[0].Type))
 						parameters.push("parameters." + parameter[0].Name + " = " + parameterName + ";\n");
-					if (Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type))
+					if (Xrm.RESTBuilder.IsParameterCollection(parameter[0].Type))
 						parameters.push("parameters." + parameter[0].Name + " = [" + parameterName + "];\n");
 				}
 				else {
@@ -4890,7 +4942,7 @@ Xrm.RESTBuilder.BuildParameters = function (item) {
 		return null;
 
 	parameters.push("\n");
-	return parameters.join("");
+	return !returnGetParameters ? parameters.join("") : getParameters.join("&");
 }
 
 Xrm.RESTBuilder.BuildParametersForEntity = function (type, paramName, entityType, variableName) {
@@ -5351,7 +5403,7 @@ Xrm.RESTBuilder.Endpoint_Change = function () {
 		$("#Impersonate").hide();
 		$("#ReturnRecord").hide();
 		$("#RetrieveSkip").show();
-		$("#Count").hide();
+		$("#RecordCount").hide();
 		$("#ui-accordion-Accordion-header-1").show();
 		$("#ui-accordion-Accordion-header-2").show();
 		$("#ui-accordion-Accordion-header-3").show();
@@ -5394,7 +5446,7 @@ Xrm.RESTBuilder.Endpoint_Change = function () {
 		$("#AuthToken").show();
 		$("#Impersonate").show();
 		$("#RetrieveSkip").hide();
-		$("#Count").show();
+		$("#RecordCount").show();
 		$("#TypeRetrieveNextLink").button("option", "disabled", false);
 
 		if (Xrm.RESTBuilder.Type === "RetrieveMultiple") {
@@ -5511,7 +5563,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 				$("#DetectChanges").hide();
 				$("#FormattedValues").show();
 				$("#ReturnRecord").hide();
-				$("#Count").show();
+				$("#RecordCount").show();
 
 				//Clear checked items in related entities until Web API supports this
 				$("#Accordion").accordion("option", "active", 0);
@@ -5528,7 +5580,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 			} else {
 				$("#DetectChanges").hide();
 				$("#FormattedValues").hide();
-				$("#Count").hide();
+				$("#RecordCount").hide();
 			}
 			break;
 		case "Retrieve":
@@ -5537,7 +5589,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 			if (Xrm.RESTBuilder.Endpoint === "WebApi") {
 				$("#DetectChanges").show();
 				$("#FormattedValues").show();
-				$("#Count").hide();
+				$("#RecordCount").hide();
 				$("#ReturnRecord").hide();
 				if (parseFloat($("#WebApiVersion").val()) >= 9) {
 					$("#LibraryXrmWebApi").button("option", "disabled", false);
@@ -5548,7 +5600,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 			} else {
 				$("#DetectChanges").hide();
 				$("#FormattedValues").hide();
-				$("#Count").hide();
+				$("#RecordCount").hide();
 			}
 			//Expands on relationships aren't currently supported
 			$("#ui-accordion-Accordion-header-1").show();
@@ -5565,7 +5617,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 				}
 				$("#DetectChanges").hide();
 				$("#FormattedValues").show();
-				$("#Count").hide();
+				$("#RecordCount").hide();
 				if (Number($("#WebApiVersion").val() >= 8.2)) {
 					$("#ReturnRecord").show();
 					$("#FormattedValues").show();
@@ -5586,7 +5638,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 			else {
 				$("#DetectChanges").hide();
 				$("#FormattedValues").hide();
-				$("#Count").hide();
+				$("#RecordCount").hide();
 			}
 			break;
 		case "Delete":
@@ -5594,7 +5646,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 			if (Xrm.RESTBuilder.Endpoint === "WebApi") {
 				$("#DetectChanges").hide();
 				$("#FormattedValues").hide();
-				$("#Count").hide();
+				$("#RecordCount").hide();
 				$("#ReturnRecord").hide();
 				if (parseFloat($("#WebApiVersion").val()) >= 9) {
 					$("#LibraryXrmWebApi").button("option", "disabled", false);
@@ -5606,7 +5658,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 			else {
 				$("#DetectChanges").hide();
 				$("#FormattedValues").hide();
-				$("#Count").hide();
+				$("#RecordCount").hide();
 			}
 			break;
 		case "Associate":
@@ -5620,13 +5672,13 @@ Xrm.RESTBuilder.Type_Change = function () {
 			if (Xrm.RESTBuilder.Endpoint === "WebApi") {
 				$("#FormattedValues").hide();
 				$("#DetectChanges").hide();
-				$("#Count").hide();
+				$("#RecordCount").hide();
 				$("#ReturnRecord").hide();
 			}
 			else {
 				$("#DetectChanges").hide();
 				$("#FormattedValues").hide();
-				$("#Count").hide();
+				$("#RecordCount").hide();
 			}
 			$("#LibrarySDKJQ").button("option", "disabled", true);
 			if ($("#LibrarySDKJQ").is(":checked")) {
@@ -5738,8 +5790,8 @@ Xrm.RESTBuilder.SetXrmWebApiStates = function () {
 		if (Xrm.RESTBuilder.Library === "XrmWebApi") {
 			$("#FormattedValuesTrue").prop("checked", "true").button("refresh");
 			$("#FormattedValuesFalse").button("option", "disabled", true);
-			$("#CountFalse").prop("checked", "true").button("refresh");
-			$("#CountTrue").button("option", "disabled", true);
+			$("#RecordCountFalse").prop("checked", "true").button("refresh");
+			$("#RecordCountTrue").button("option", "disabled", true);
 			$("#AuthTokenFalse").prop("checked", "true").button("refresh");
 			$("#AuthTokenTrue").button("option", "disabled", true);
 			$("#ImpersonateFalse").prop("checked", "true").button("refresh");
@@ -5763,7 +5815,7 @@ Xrm.RESTBuilder.SetXrmWebApiStates = function () {
 		}
 		else {
 			$("#FormattedValuesFalse").button("option", "disabled", false);
-			$("#CountTrue").button("option", "disabled", false);
+			$("#RecordCountTrue").button("option", "disabled", false);
 			$("#AuthTokenTrue").button("option", "disabled", false);
 			$("#ImpersonateTrue").button("option", "disabled", false);
 			$("#DetectChangesTrue").button("option", "disabled", false);
@@ -5885,7 +5937,7 @@ Xrm.RESTBuilder.Reset_Click = function () {
 	$("#ResponseObject").text("");
 	$("#ResultTree").remove();
 	$("#CleanResults").button("option", "disabled", true);
-	$("#CountFalse").prop("checked", "true").button("refresh");
+	$("#RecordCountFalse").prop("checked", "true").button("refresh");
 	$("#ImpersonateFalse").prop("checked", "true").button("refresh");
 	Xrm.RESTBuilder.Impersonate_Change();
 	$("#ImpersonateId").val("");
@@ -7208,3 +7260,8 @@ Xrm.RESTBuilder.CleanFetchXml = function (xmlString) {
 	output = encodeURIComponent(output);
 	return output;
 }
+
+String.prototype.replaceAll = function (search, replacement) {
+	var target = this;
+	return target.replace(new RegExp(search, 'g'), replacement);
+};

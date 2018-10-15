@@ -4,6 +4,7 @@ A tool for CRM 2015/2016 & D365 CE (7.0+) Online &amp; On Premise to generate Ja
 # Solution downloads are found on the [releases](https://github.com/jlattimer/CRMRESTBuilder/releases) page.
 Versions for CRM 2011/2013 are no longer supported but can still be found on the releases page.
 
+If this tool helped you out at all - [![PayPalMe](https://github.com/jlattimer/CRMRESTBuilder/blob/master/extras/paypal.png?raw=true)](https://paypal.me/JLattimer)
 
 ## Generate requests based on the metadata in your CRM environment
 
@@ -12,4 +13,3 @@ Versions for CRM 2011/2013 are no longer supported but can still be found on the
 **View and execute the generated code**
 
 ![CRMRESTBuilderDemo2](https://github.com/jlattimer/CRMRESTBuilder/blob/master/extras/Demo2.png?raw=true, "CRMRESTBuilderDemo2")
-

@@ -419,7 +419,7 @@ Xrm.RESTBuilder.GetAllEntityMetadata = function () {
 	if (Xrm.RESTBuilder.CrmVersion[0] > 7) {
 		entityProperties = new mdq.MetadataPropertiesExpression(false, [emp.Attributes, emp.PrimaryIdAttribute, emp.DisplayName, emp.SchemaName, emp.IsIntersect, emp.EntitySetName, emp.ObjectTypeCode]);
 	} else {
-		entityProperties = new mdq.MetadataPropertiesExpression(false, [emp.PrimaryIdAttribute, emp.DisplayName, emp.SchemaName, emp.IsIntersect, emp.MetadataId]);
+		entityProperties = new mdq.MetadataPropertiesExpression(false, [emp.Attributes, emp.PrimaryIdAttribute, emp.DisplayName, emp.SchemaName, emp.IsIntersect, emp.MetadataId]);
 	}
 
 	var attributesFilter = new mdq.MetadataFilterExpression(mdq.LogicalOperator.And);
@@ -885,6 +885,7 @@ Xrm.RESTBuilder.GetCsdl = function () {
 
 Xrm.RESTBuilder.SetWebApiVersion = function () {
 	if (Xrm.RESTBuilder.CrmVersion[0] < 8) {
+		$("#WebApiVersion").hide();
 		return;
 	}
 

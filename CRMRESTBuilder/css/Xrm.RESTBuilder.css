@@ -134,8 +134,11 @@ table {
 }
 
 th {
-    padding-left: 10px;
     text-align: left;
+}
+
+#TableCreateUpdate th {
+    padding-left: 5px;
 }
 
 td {
@@ -340,12 +343,10 @@ body {
 }
 
 .HeaderImage {
-    /* height: 30px; */
     margin-right: 5px;
-    /* width: 30px; */
 }
 
-#InputParameters td:nth-child(3n+4) {
+#InputParameters td:nth-child(0n) {
     text-align: center;
 }
 

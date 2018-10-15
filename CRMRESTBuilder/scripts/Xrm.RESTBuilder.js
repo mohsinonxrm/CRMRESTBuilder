@@ -1169,29 +1169,27 @@ Xrm.RESTBuilder.ConvertCollectionName = function (type) {
 Xrm.RESTBuilder.CreateInputParameters = function (item) {
 	$("#InputParameters tbody").find("tr").remove();
 
-	if (item.Entity === "none") {
+	if (item.Entity === "none")
 		$("#TargetId").attr("disabled", "disabled");
-	} else {
+	else
 		$("#TargetId").removeAttr("disabled");
-	}
 
-	if (!item.Parameters) {
+	if (!item.Parameters)
 		return;
-	}
 
+	var populateParameterEntityLists = false;
 	for (var i = 0; i < item.Parameters.length; i++) {
 		//Skip creating for the "entity" parameter as the id & type are passed in the url
-		if (item.IsBound && item.Parameters[i].Name === "entity") {
+		if (item.IsBound && item.Parameters[i].Name === "entity")
 			continue;
-		}
 
 		var ctrl = "";
+		var entityCtrl = "";
 		switch (item.Parameters[i].Type) {
 			case "Edm.Boolean":
 				var blank = "";
-				if (item.Parameters[i].Optional) {
+				if (item.Parameters[i].Optional)
 					blank = "<option></option>";
-				}
 				ctrl = "<select class='Boolean ui-corner-all'>" + blank + "<option>True</option><option>False</option></select>";
 				break;
 			case "Edm.DateTimeOffset":
@@ -1207,7 +1205,6 @@ Xrm.RESTBuilder.CreateInputParameters = function (item) {
 			case "Edm.Int32":
 			case "Edm.Int64":
 				ctrl = "<input type='text' id='" + item.Parameters[i].Name + "' class='Integer ui-corner-all' placeholder='Integer' />";
-				Xrm.RESTBuilder.MakeSpinner(-2147483647, 2147483647, 1, item.Parameters[i].Name);
 				break;
 			case "Edm.Binary":
 			case "Edm.String":
@@ -1222,23 +1219,28 @@ Xrm.RESTBuilder.CreateInputParameters = function (item) {
 				}
 				else if (item.Parameters[i].Type === "Collection(Edm.Int32)") {
 					ctrl = "<input type='text' id='" + item.Parameters[i].Name + "' class='Integer ui-corner-all' placeholder='Integer' />";
-					Xrm.RESTBuilder.MakeSpinner(-2147483647, 2147483647, 1, item.Parameters[i].Name);
 				}
 				else if (Xrm.RESTBuilder.IsParameterEntity(item.Parameters[i].Type) || Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type)) {
 					ctrl = "<input type='text' class='Guid focus ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />";
+					if (item.Parameters[i].Type === "mscrm.crmbaseentity" || item.Parameters[i].Type === "Collection(mscrm.crmbaseentity)") {
+						entityCtrl = "<select class='ui-corner-all ParameterEntity'></select>"
+						populateParameterEntityLists = true;
+					}
 				} else {
 					ctrl = "<span>Not Handled</span>";
 				}
 				break;
 		}
 
-		$("#InputParameters tbody").append("<tr><td>" + item.Parameters[i].Name + "</td><td><nobr>" + ctrl + "</td><td>" + item.Parameters[i].Type + "</td><td>" + item.Parameters[i].Optional + "</td>" +
-			"<td><input type='checkbox' class='ParameterInclude' " + ((item.Parameters[i].Optional) ? "" : "checked disabled") + " /></td></tr>");
+		$("#InputParameters tbody").append("<tr><td>" + item.Parameters[i].Optional + "</td><td><input type='checkbox' class='ParameterInclude' " + ((item.Parameters[i].Optional) ? "" : "checked disabled") + " /></td>" +
+			"<td>" + item.Parameters[i].Name + "</td><td>" + item.Parameters[i].Type + "</td><td><nobr>" + ctrl + "</td><td>" + entityCtrl + "</td></tr>");
 	}
 
-	if ($.grep(item.Parameters, function (p) { return p.Type === "Edm.DateTimeOffset"; }).length > 0) {
+	if ($.grep(item.Parameters, function (p) { return p.Type === "Edm.DateTimeOffset"; }).length > 0)
 		Xrm.RESTBuilder.MakeDatePicker("DateTime");
-	}
+
+	if (populateParameterEntityLists)
+		$("#EntityList option").clone().appendTo(".ParameterEntity");
 
 	var spinners = $.grep(item.Parameters, function (p) { return p.Type === "Edm.Int32" || p.Type === "Edm.Int64" || p.Type === "Edm.Decimal" || p.Type === "Edm.Double"; });
 	for (var j = 0; j < spinners.length; j++) {
@@ -4786,7 +4788,7 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 	var parameters = [];
 	var getParameters = [];
 	parameters.push("var parameters = {};\n");
-	if (item.IsBound && (item.Parameters[0].Name === "entity" || item.Parameters[0].Name === "entityset") && Xrm.RESTBuilder.Library === "XrmWebApi") {
+	if (item.IsBound && item.Parameters[0].Name === "entity" && Xrm.RESTBuilder.Library === "XrmWebApi") {
 		parameters.push("var entity = {};\n");
 		parameters.push("entity.id = \"" + $("#TargetId").val() + "\";\n");
 		parameters.push("entity.entityType = \"" + Xrm.RESTBuilder.ParameterTypeToEntityName(item.Parameters[0].Type) + "\";\n");
@@ -4795,13 +4797,13 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 
 	for (var i = 0; i < $("#InputParameters tbody tr").length; i++) {
 		var tr = $("#InputParameters tbody tr")[i];
-		var parameter = $.grep(item.Parameters, function (e) { return e.Name === $(tr).find("td:eq(0)").text(); });
+		var parameter = $.grep(item.Parameters, function (e) { return e.Name === $(tr).find("td:eq(2)").text(); });
 
 		//Skip creating for the "entity" parameter as the id & type are passed in the url except Xrm.WebApi
 		if (item.IsBound && parameter[0].Name === "entity" && Xrm.RESTBuilder.Library !== "XrmWebApi")
 			continue;
 
-		if (!$(tr).find("input:checkbox:last").is(":checked"))
+		if (!$(tr).find("input:checkbox:first").is(":checked"))
 			continue;
 
 		switch (parameter[0].Type) {
@@ -4813,7 +4815,7 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, booleanValue.toLowerCase()));
 				break;
 			case "Edm.DateTimeOffset":
-				var date = $(tr).find("input:first").val();
+				var date = $(tr).find("input:eq(1)").val();
 				if (!date)
 					date = new Date().toLocaleDateString();
 				var time = $(tr).find("select:eq(0)").val();
@@ -4828,14 +4830,14 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 			case "Edm.Decimal":
 			case "Edm.Int32":
 			case "Edm.Int64":
-				var numberValue = $(tr).find("input:first").val();
+				var numberValue = $(tr).find("input:eq(1)").val();
 				if (!numberValue)
 					numberValue = 0;
 				parameters.push("parameters." + parameter[0].Name + " = " + numberValue + ";\n");
 				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, numberValue));
 				break;
 			case "mscrm.Label":
-				var labelValue = $(tr).find("input:first").val();
+				var labelValue = $(tr).find("input:eq(1)").val();
 				if (parameter[0].Optional && labelValue === "")
 					continue;
 				parameters.push("var " + parameter[0].Name.toLowerCase() + " = {};\n");
@@ -4858,12 +4860,12 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 				break;
 			case "Edm.Binary":
 			case "Edm.String":
-				var stringValue = $(tr).find("input:first").val();
+				var stringValue = $(tr).find("input:eq(1)").val();
 				parameters.push("parameters." + parameter[0].Name + " = \"" + stringValue + "\";\n");
 				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "'" + stringValue + "'"));
 				break;
 			case "Edm.Guid":
-				var guidValue = $(tr).find("input:first").val();
+				var guidValue = $(tr).find("input:eq(1)").val();
 				if (!guidValue)
 					guidValue = "00000000-0000-0000-0000-000000000000";
 				parameters.push("parameters." + parameter[0].Name + " = \"" + guidValue + "\";\n");
@@ -4871,37 +4873,50 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 				break;
 			default:
 				if (parameter[0].Type === "Collection(Edm.String)") {
-					var stringValue = $(tr).find("input:first").val();
+					var stringValue = $(tr).find("input:eq(1)").val();
 					parameters.push("parameters." + parameter[0].Name + " = [\"" + stringValue + "\"];\n");
 					getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "['" + stringValue + "']"));
-					// parameters.push("parameters." + parameter[0].Name + " = [" + parameter[0].Name.toLowerCase() + "];\n");
 				}
 				else if (parameter[0].Type === "Collection(Edm.Int32)") {
-					var numberValue = $(tr).find("input:first").val();
+					var numberValue = $(tr).find("input:eq(1)").val();
 					if (!numberValue)
 						numberValue = 0;
 					parameters.push("parameters." + parameter[0].Name + " = [" + numberValue + "];\n");
 					getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "[" + numberValue + "]"));
-					// parameters.push("parameters." + parameter[0].Name + " = [" + parameter[0].Name.toLowerCase() + "];\n");
 				}
 				else if (Xrm.RESTBuilder.IsParameterEntity(parameter[0].Type) || Xrm.RESTBuilder.IsParameterCollection(parameter[0].Type)) {
 					var entityLogical = Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type);
 					var primaryIdAttribute = Xrm.RESTBuilder.GetPrimaryIdAttribute(entityLogical);
-					if (primaryIdAttribute === "")
+					if (primaryIdAttribute === "") {
 						primaryIdAttribute = "REPLACE_WITH_PRIMARY_ID_ATTRIBUTE";
+						var parameterEntity = $(tr).find("select:first option:selected").attr("logicalname");
+						if (parameterEntity !== "none") {
+							var parameterEntityPrimaryId = Xrm.RESTBuilder.GetPrimaryIdAttribute(parameterEntity);
+							if (parameterEntityPrimaryId)
+								primaryIdAttribute = parameterEntityPrimaryId
+						}
+					}
 
 					var parameterName = parameter[0].Name.toLowerCase();
 					if (Xrm.RESTBuilder.IsParameterCollection(parameter[0].Type))
 						parameterName = parameterName + "1";
 
 					parameters.push("var " + parameterName + " = {};\n");
-					var guidValue = $(tr).find("input:first").val();
+					var guidValue = $(tr).find("input:eq(1)").val();
 					if (!guidValue)
 						guidValue = "00000000-0000-0000-0000-000000000000";
 					parameters.push(parameterName + "." + primaryIdAttribute + " = \"" + guidValue + "\"; //Delete if creating new record \n");
-					parameters.push(parameterName + "[\"@odata.type\"]" + " = \"Microsoft.Dynamics.CRM." + Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type) + "\";\n");
+
+					var parameterEntityLogical = Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type);
+					if (parameterEntityLogical.substr(0, 7) === "REPLACE") {
+						var parameterEntity = $(tr).find("select:first option:selected").attr("logicalname");
+						if (parameterEntity !== "none")
+							parameterEntityLogical = parameterEntity;
+					}
+
+					parameters.push(parameterName + "[\"@odata.type\"]" + " = \"Microsoft.Dynamics.CRM." + parameterEntityLogical + "\";\n");
 					getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "{\"" + primaryIdAttribute + "\":\"" + guidValue + "\",\"@odata.type\":\"Microsoft.Dynamics.CRM."
-						+ Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type) + "\"}"));
+						+ parameterEntityLogical + "\"}"));
 					if (entityLogical.substr(0, 7) !== "REPLACE") {
 						var entities = $.grep(Xrm.RESTBuilder.EntityMetadata, function (e) { return e.LogicalName === entityLogical; });
 						if (entities.length === 1) {

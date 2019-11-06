@@ -856,7 +856,7 @@ Xrm.RESTBuilder.GetCsdl = function () {
 
 				// Update the EntitySetName attribute in the Entity drop down 
 				$("#EntityList > option").each(function () {
-					var logicalName = req.attributes["logicalname"].value;
+					var logicalName = this.attributes["logicalname"].value;
 					var entities = $.grep(Xrm.RESTBuilder.EntitySets, function (e) {
 						var metaName = e.attributes["EntityType"].value;
 						var metaLogicalName = metaName.substr(metaName.lastIndexOf(".") + 1);
@@ -865,7 +865,7 @@ Xrm.RESTBuilder.GetCsdl = function () {
 					if (entities.length === 0)
 						return;
 
-					req.attributes["entitysetname"].value = entities[0].attributes["Name"].value;
+					this.attributes["entitysetname"].value = entities[0].attributes["Name"].value;
 				});
 
 				var actions = $(csdl).find("Action").toArray();
@@ -1310,7 +1310,7 @@ Xrm.RESTBuilder.Associate_XMLHTTP = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1347,7 +1347,7 @@ Xrm.RESTBuilder.Associate_XMLHTTP_WebApi = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1387,7 +1387,7 @@ Xrm.RESTBuilder.Associate_jQuery_WebApi = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1416,7 +1416,7 @@ Xrm.RESTBuilder.Associate_jQuery = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1504,7 +1504,7 @@ Xrm.RESTBuilder.Disassociate_XMLHTTP = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1538,7 +1538,7 @@ Xrm.RESTBuilder.Disassociate_XMLHTTP_WebApi = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1574,7 +1574,7 @@ Xrm.RESTBuilder.Disassociate_jQuery_WebApi = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1601,7 +1601,7 @@ Xrm.RESTBuilder.Disassociate_jQuery = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1684,7 +1684,7 @@ Xrm.RESTBuilder.Delete_XMLHTTP = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1717,7 +1717,7 @@ Xrm.RESTBuilder.Delete_XMLHTTP_WebApi = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1752,7 +1752,7 @@ Xrm.RESTBuilder.Delete_jQuery_WebApi = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1795,7 +1795,7 @@ Xrm.RESTBuilder.Delete_jQuery = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1892,7 +1892,7 @@ Xrm.RESTBuilder.Create_jQuery = function (js) {
 	js.push("        var newEntityId = result." + $("select[id=EntityList]").val() + "Id;");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1932,7 +1932,7 @@ Xrm.RESTBuilder.Create_XMLHTTP = function (js) {
 	js.push("            var newEntityId = result." + $("select[id=EntityList]").val() + "Id;");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1973,7 +1973,7 @@ Xrm.RESTBuilder.Create_XMLHTTP_WebApi = function (js) {
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2017,7 +2017,7 @@ Xrm.RESTBuilder.Create_jQuery_WebApi = function (js) {
 	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2113,7 +2113,7 @@ Xrm.RESTBuilder.Update_jQuery = function (js) {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2154,7 +2154,7 @@ Xrm.RESTBuilder.Update_XMLHTTP = function (js) {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2200,7 +2200,7 @@ Xrm.RESTBuilder.Update_XMLHTTP_WebApi = function (js) {
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2249,7 +2249,7 @@ Xrm.RESTBuilder.Update_jQuery_WebApi = function (js) {
 	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2368,7 +2368,7 @@ Xrm.RESTBuilder.Retrieve_XMLHTTP = function (selects, expand) {
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 12));
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2413,7 +2413,7 @@ Xrm.RESTBuilder.RetrieveNextLink_XMLHTTP_WebApi = function () {
 		js.push("        }");
 	}
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2465,7 +2465,7 @@ Xrm.RESTBuilder.RetrieveNextLink_jQuery_WebApi = function () {
 	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2517,7 +2517,7 @@ Xrm.RESTBuilder.Retrieve_XMLHTTP_WebApi = function (selects, expand) {
 		js.push("        }");
 	}
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2573,7 +2573,7 @@ Xrm.RESTBuilder.Retrieve_jQuery_WebApi = function (selects, expand) {
 	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2624,7 +2624,7 @@ Xrm.RESTBuilder.Retrieve_jQuery = function (selects, expand) {
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 8));
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2763,7 +2763,7 @@ Xrm.RESTBuilder.RetrieveMultiple_XMLHTTP = function (selects, expand, filter, to
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 12));
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2803,7 +2803,7 @@ Xrm.RESTBuilder.RetrieveMultiple_XMLHTTP_WebApi = function (selects, expand, fil
 	js.push(Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 12));
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2844,7 +2844,7 @@ Xrm.RESTBuilder.RetrieveMultiple_jQuery_WebApi = function (selects, expand, filt
 	js.push(Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 8));
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2891,7 +2891,7 @@ Xrm.RESTBuilder.RetrieveMultiple_jQuery = function (selects, expand, filter, top
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 8));
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2973,7 +2973,7 @@ Xrm.RESTBuilder.PredefinedQuery_XMLHTTP_WebApi = function () {
 	js.push("            var results = JSON.parse(req.response);");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -3018,7 +3018,7 @@ Xrm.RESTBuilder.PredefinedQuery_jQuery_WebApi = function () {
 	js.push("        var results = data.value;");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -3060,7 +3060,7 @@ Xrm.RESTBuilder.Action_XMLHTTP_WebApi = function (action, parameters) {
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -3112,7 +3112,7 @@ Xrm.RESTBuilder.Action_jQuery_WebApi = function (action, parameters) {
 		js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -3239,7 +3239,7 @@ Xrm.RESTBuilder.Function_XMLHTTP_WebApi = function (func, parameters) {
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.response") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -3288,8 +3288,8 @@ Xrm.RESTBuilder.Function_jQuery_WebApi = function (func, parameters) {
 	else
 		js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
-	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
+	js.push("    error: function(xhr) {");
+	js.push("        " + Xrm.RESTBuilder.Alert("xhr.responseText") + ";");
 	js.push("    }");
 	js.push("});");
 

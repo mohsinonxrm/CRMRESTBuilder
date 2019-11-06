@@ -1261,7 +1261,7 @@ Xrm.RESTBuilder.Associate_XST = function () {
 	js.push("         //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    },");
 	js.push("    " + Xrm.RESTBuilder.Async + "");
 	js.push(");");
@@ -1283,7 +1283,7 @@ Xrm.RESTBuilder.Associate_SDK = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("        " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push(");");
 
@@ -1310,7 +1310,7 @@ Xrm.RESTBuilder.Associate_XMLHTTP = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert() + "(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1347,7 +1347,7 @@ Xrm.RESTBuilder.Associate_XMLHTTP_WebApi = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1387,7 +1387,7 @@ Xrm.RESTBuilder.Associate_jQuery_WebApi = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1416,7 +1416,7 @@ Xrm.RESTBuilder.Associate_jQuery = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1438,7 +1438,7 @@ Xrm.RESTBuilder.Associate_XSVC = function () {
 	js.push("         //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    errorCallback: function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1458,7 +1458,7 @@ Xrm.RESTBuilder.Disassociate_XST = function () {
 	js.push("         //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function (error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    },");
 	js.push("    " + Xrm.RESTBuilder.Async + "");
 	js.push(");");
@@ -1479,7 +1479,7 @@ Xrm.RESTBuilder.Disassociate_SDK = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("        " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push(");");
 
@@ -1504,7 +1504,7 @@ Xrm.RESTBuilder.Disassociate_XMLHTTP = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert() + "(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1538,7 +1538,7 @@ Xrm.RESTBuilder.Disassociate_XMLHTTP_WebApi = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1574,7 +1574,7 @@ Xrm.RESTBuilder.Disassociate_jQuery_WebApi = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1601,7 +1601,7 @@ Xrm.RESTBuilder.Disassociate_jQuery = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1623,7 +1623,7 @@ Xrm.RESTBuilder.Disassociate_XSVC = function () {
 	js.push("         //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    errorCallback: function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1641,7 +1641,7 @@ Xrm.RESTBuilder.Delete_XST = function () {
 	js.push("         //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    },");
 	js.push("    " + Xrm.RESTBuilder.Async + "");
 	js.push(");");
@@ -1660,7 +1660,7 @@ Xrm.RESTBuilder.Delete_SDK = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("        " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push(");");
 
@@ -1684,7 +1684,7 @@ Xrm.RESTBuilder.Delete_XMLHTTP = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert() + "(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1717,7 +1717,7 @@ Xrm.RESTBuilder.Delete_XMLHTTP_WebApi = function () {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1752,7 +1752,7 @@ Xrm.RESTBuilder.Delete_jQuery_WebApi = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1769,7 +1769,7 @@ Xrm.RESTBuilder.Delete_XrmWebApi_WebApi = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("        " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }\n");
 	js.push(");");
 
@@ -1795,7 +1795,7 @@ Xrm.RESTBuilder.Delete_jQuery = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1813,7 +1813,7 @@ Xrm.RESTBuilder.Delete_SDKJQ = function () {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("        " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push(");");
 
@@ -1832,7 +1832,7 @@ Xrm.RESTBuilder.Delete_XSVC = function () {
 	js.push("         //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    errorCallback: function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1849,7 +1849,7 @@ Xrm.RESTBuilder.Create_XST = function (js) {
 	js.push("         var newEntityId = result." + $("select[id=EntityList]").val() + "Id;");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    },");
 	js.push("    " + Xrm.RESTBuilder.Async + "");
 	js.push(");");
@@ -1867,7 +1867,7 @@ Xrm.RESTBuilder.Create_SDK = function (js) {
 	js.push("         var newEntityId = result." + $("select[id=EntityList]").val() + "Id;");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push(");");
 
@@ -1892,7 +1892,7 @@ Xrm.RESTBuilder.Create_jQuery = function (js) {
 	js.push("        var newEntityId = result." + $("select[id=EntityList]").val() + "Id;");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -1909,7 +1909,7 @@ Xrm.RESTBuilder.Create_SDKJQ = function (js) {
 	js.push("         var newEntityId = result." + $("select[id=EntityList]").val() + "Id;");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push(");");
 
@@ -1932,7 +1932,7 @@ Xrm.RESTBuilder.Create_XMLHTTP = function (js) {
 	js.push("            var newEntityId = result." + $("select[id=EntityList]").val() + "Id;");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert() + "(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -1973,7 +1973,7 @@ Xrm.RESTBuilder.Create_XMLHTTP_WebApi = function (js) {
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2017,7 +2017,7 @@ Xrm.RESTBuilder.Create_jQuery_WebApi = function (js) {
 	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2032,7 +2032,7 @@ Xrm.RESTBuilder.Create_XrmWebApi_WebApi = function (js) {
 	js.push("        var newEntityId = result.id;");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("        " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }\n");
 	js.push(");");
 
@@ -2050,7 +2050,7 @@ Xrm.RESTBuilder.Create_XSVC = function (js) {
 	js.push("         var newEntityId = result." + $("select[id=EntityList]").val() + "Id;");
 	js.push("    },");
 	js.push("    errorCallback: function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2068,7 +2068,7 @@ Xrm.RESTBuilder.Update_XST = function (js) {
 	js.push("         //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    },");
 	js.push("    " + Xrm.RESTBuilder.Async + "");
 	js.push(");");
@@ -2087,7 +2087,7 @@ Xrm.RESTBuilder.Update_SDK = function (js) {
 	js.push("         //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push(");");
 
@@ -2113,7 +2113,7 @@ Xrm.RESTBuilder.Update_jQuery = function (js) {
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2131,7 +2131,7 @@ Xrm.RESTBuilder.Update_SDKJQ = function (js) {
 	js.push("         //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push(");");
 
@@ -2154,7 +2154,7 @@ Xrm.RESTBuilder.Update_XMLHTTP = function (js) {
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert() + "(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2200,7 +2200,7 @@ Xrm.RESTBuilder.Update_XMLHTTP_WebApi = function (js) {
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2249,7 +2249,7 @@ Xrm.RESTBuilder.Update_jQuery_WebApi = function (js) {
 	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2265,7 +2265,7 @@ Xrm.RESTBuilder.Update_XrmWebApi_WebApi = function (js) {
 	js.push("        var updatedEntityId = result.id;");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("        " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }\n");
 	js.push(");");
 
@@ -2284,7 +2284,7 @@ Xrm.RESTBuilder.Update_XSVC = function (js) {
 	js.push("         //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    errorCallback: function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    },");
 	js.push("});");
 
@@ -2312,7 +2312,7 @@ Xrm.RESTBuilder.Retrieve_XST = function (selects, expand) {
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 9));
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    },");
 	js.push("    " + Xrm.RESTBuilder.Async + "");
 	js.push(");");
@@ -2341,7 +2341,7 @@ Xrm.RESTBuilder.Retrieve_SDK = function (selects, expand) {
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 8));
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push(");");
 
@@ -2368,7 +2368,7 @@ Xrm.RESTBuilder.Retrieve_XMLHTTP = function (selects, expand) {
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 12));
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert() + "(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2413,7 +2413,7 @@ Xrm.RESTBuilder.RetrieveNextLink_XMLHTTP_WebApi = function () {
 		js.push("        }");
 	}
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2465,7 +2465,7 @@ Xrm.RESTBuilder.RetrieveNextLink_jQuery_WebApi = function () {
 	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2517,7 +2517,7 @@ Xrm.RESTBuilder.Retrieve_XMLHTTP_WebApi = function (selects, expand) {
 		js.push("        }");
 	}
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2573,7 +2573,7 @@ Xrm.RESTBuilder.Retrieve_jQuery_WebApi = function (selects, expand) {
 	}
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2596,7 +2596,7 @@ Xrm.RESTBuilder.Retrieve_XrmWebApi_WebApi = function (selects, expand) {
 	js.push(Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 4));
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("        " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }\n");
 	js.push(");");
 
@@ -2624,7 +2624,7 @@ Xrm.RESTBuilder.Retrieve_jQuery = function (selects, expand) {
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 8));
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2652,7 +2652,7 @@ Xrm.RESTBuilder.Retrieve_SDKJQ = function (selects, expand) {
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 8));
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push(");");
 
@@ -2691,7 +2691,7 @@ Xrm.RESTBuilder.Retrieve_XSVC = function (selects, expand) {
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 9));
 	js.push("    },");
 	js.push("    errorCallback: function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2710,7 +2710,7 @@ Xrm.RESTBuilder.RetrieveMultiple_XST = function (selects, expand, filter, top, o
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 4));
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    },");
 	js.push("    function() {\n");
 	js.push("         //On Complete - Do Something\n");
@@ -2733,7 +2733,7 @@ Xrm.RESTBuilder.RetrieveMultiple_SDK = function (selects, expand, filter, top, o
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 4));
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    },");
 	js.push("    function() {\n");
 	js.push("         //On Complete - Do Something\n");
@@ -2763,7 +2763,7 @@ Xrm.RESTBuilder.RetrieveMultiple_XMLHTTP = function (selects, expand, filter, to
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 12));
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert() + "(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2803,7 +2803,7 @@ Xrm.RESTBuilder.RetrieveMultiple_XMLHTTP_WebApi = function (selects, expand, fil
 	js.push(Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 12));
 	js.push("        }");
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2844,7 +2844,7 @@ Xrm.RESTBuilder.RetrieveMultiple_jQuery_WebApi = function (selects, expand, filt
 	js.push(Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 8));
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2864,7 +2864,7 @@ Xrm.RESTBuilder.RetrieveMultiple_XrmWebApi_WebApi = function (selects, expand, f
 	js.push(resultVars);
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("        " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }\n");
 	js.push(");");
 
@@ -2891,7 +2891,7 @@ Xrm.RESTBuilder.RetrieveMultiple_jQuery = function (selects, expand, filter, top
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 8));
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        " + Xrm.RESTBuilder.Alert() + "(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2910,7 +2910,7 @@ Xrm.RESTBuilder.RetrieveMultiple_SDKJQ = function (selects, expand, filter, top,
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 4));
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    },");
 	js.push("    function() {\n");
 	js.push("         //On Complete - Do Something\n");
@@ -2933,7 +2933,7 @@ Xrm.RESTBuilder.RetrieveMultiple_XSVC = function (selects, expand, filter, top, 
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 4));
 	js.push("    },");
 	js.push("    errorCallback: function(error) {");
-	js.push("         " + Xrm.RESTBuilder.Alert() + "(error.message);");
+	js.push("         " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -2973,7 +2973,7 @@ Xrm.RESTBuilder.PredefinedQuery_XMLHTTP_WebApi = function () {
 	js.push("            var results = JSON.parse(this.response);");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -3018,7 +3018,7 @@ Xrm.RESTBuilder.PredefinedQuery_jQuery_WebApi = function () {
 	js.push("        var results = data.value;");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -3060,7 +3060,7 @@ Xrm.RESTBuilder.Action_XMLHTTP_WebApi = function (action, parameters) {
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -3112,7 +3112,7 @@ Xrm.RESTBuilder.Action_jQuery_WebApi = function (action, parameters) {
 		js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -3147,7 +3147,7 @@ Xrm.RESTBuilder.Action_Function_XrmWebApi = function (action, parameters, operat
 	js.push("        }");
 	js.push("    },");
 	js.push("    function(error) {");
-	js.push("        Xrm.Utility.alertDialog(error.message);");
+	js.push("        " + Xrm.RESTBuilder.Alert("error.message") + ";");
 	js.push("    }\n");
 	js.push(");");
 
@@ -3239,7 +3239,7 @@ Xrm.RESTBuilder.Function_XMLHTTP_WebApi = function (func, parameters) {
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            Xrm.Utility.alertDialog(this.statusText);");
+	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -3289,7 +3289,7 @@ Xrm.RESTBuilder.Function_jQuery_WebApi = function (func, parameters) {
 		js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
 	js.push("    error: function(xhr, textStatus, errorThrown) {");
-	js.push("        Xrm.Utility.alertDialog(textStatus + \" \" + errorThrown);");
+	js.push("        " + Xrm.RESTBuilder.Alert("textStatus + \" \" + errorThrown") + ";");
 	js.push("    }");
 	js.push("});");
 
@@ -6869,18 +6869,25 @@ Xrm.RESTBuilder.ValidateSelectedFetchXmlEntity = function () {
 	return Xrm.RESTBuilder.EntityLogical === $entityName.toLowerCase();
 }
 
-Xrm.RESTBuilder.Alert = function () {
+Xrm.RESTBuilder.Alert = function (message) {
 	if (Xrm.RESTBuilder.CrmVersion[0] < 6) {
-		return "alert";
+		return "alert(" + message + ")";
 	}
-	return "Xrm.Utility.alertDialog";
+	if ((Xrm.RESTBuilder.CrmVersion[0] >= 6 && Xrm.RESTBuilder.CrmVersion[0] < 9) || Xrm.RESTBuilder.Endpoint === "2011") {
+		return "Xrm.Utility.alertDialog(" + message + ")";
+	}
+	return "Xrm.Navigation.openAlertDialog({ confirmButtonLabel: 'OK', text: " + message + ", title: 'Error' })";
 }
 
- = function (message) {
+Xrm.RESTBuilder.DisplayAlert = function (message) {
 	if (Xrm.RESTBuilder.CrmVersion[0] < 6) {
 		alert(message);
 	}
-	Xrm.Utility.alertDialog(message);
+	if (Xrm.RESTBuilder.CrmVersion[0] > 6 && Xrm.RESTBuilder.CrmVersion[0] < 9) {
+		Xrm.Utility.alertDialog(message);
+	}
+	var alertStrings = { confirmButtonLabel: "OK", text: message, title: "Error" }
+	Xrm.Navigation.openAlertDialog(alertStrings);
 }
 
 Xrm.RESTBuilder.Block = function () {

@@ -4620,19 +4620,39 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 		var tr = $("#TableRetrieve tbody tr")[a];
 		var filter = [];
 		var field = null;
+		
 		if ($("#ExpandEntity").prop("selectedIndex") === 0) {
 			field = $.grep(Xrm.RESTBuilder.CurrentEntityAttributes, function (e) { return e.SchemaName === $(tr).find(".Attribute:first").val(); })[0].LogicalName;
 		} else {
 			field = $.grep(Xrm.RESTBuilder.CurrentEntityExpandedAttributes, function (e) { return e.LogicalName === $("#ExpandEntity option:selected").attr("EntityLogicalName"); })[0].SchemaName;
 		}
-		var cop = $(tr).find(".Filter:first").val();
+
+		var attribute = null;
+		var type = null;
+		if ($("#ExpandEntity").prop("selectedIndex") === 0) {
+			attribute = $.grep(Xrm.RESTBuilder.CurrentEntityAttributes, function (e) { return e.SchemaName === $(tr).find(".Attribute:first").val(); });
+		} else {
+			attribute = $.grep(Xrm.RESTBuilder.CurrentEntityExpandedAttributes, function (e) { return e.LogicalName === $("#ExpandEntity option:selected").attr("EntityLogicalName"); })[0].SchemaName;
+		}
+		type = attribute[0].AttributeType;
+
+		var cop = $(tr).find(".Filter:first").val(); //bug
 		if (cop.indexOf("substringof([value],[field])") !== -1) {
 			cop = cop.replace("substringof([value],[field])", "contains([field], [value])");
 		}
 
 		cop = cop.replace("[field] ", "");
 
-		var val = $(tr).find("input:first").val();
+		var val = null;
+		if (type === "Boolean" ||type === "State" || type === "Status" || type === "Picklist") {
+			if ($(tr).find("td:eq(4) select:first").is(":visible")) {
+				val = $(tr).find("td:eq(4) select:first").val();
+			}			
+		}
+		else {
+			val = $(tr).find("input:first").val();
+		}
+		
 		var sel = $(tr).find("td:eq(3) select:first").val();
 		var lop = $(tr).find(".Logical:first").val();
 
@@ -4653,16 +4673,7 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 			continue;
 		}
 
-		var attribute = null;
-		var type = null;
-		if ($("#ExpandEntity").prop("selectedIndex") === 0) {
-			attribute = $.grep(Xrm.RESTBuilder.CurrentEntityAttributes, function (e) { return e.SchemaName === $(tr).find(".Attribute:first").val(); });
-		} else {
-			attribute = $.grep(Xrm.RESTBuilder.CurrentEntityExpandedAttributes, function (e) { return e.LogicalName === $("#ExpandEntity option:selected").attr("EntityLogicalName"); })[0].SchemaName;
-		}
-		type = attribute[0].AttributeType;
-
-		if (type !== "DateTime") {
+		if (type !== "DateTime" && val !== null) {
 			value = Xrm.RESTBuilder.ReplaceSpecial(value);
 		}
 
@@ -4685,14 +4696,15 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 			}
 			else if (type === "Boolean") {
 				var booleanValue = (value === "0") ? "false" : "true";
-				filter.push(field + " " + cop + (($(tr).find("td:eq(3) select:first").is(":visible") ? " " + booleanValue : "")));
+				filter.push(field + " " + cop + (($(tr).find("td:eq(4) select:first").is(":visible") ? " " + booleanValue : "")));
 			}
-			else if (type === "Decimal" || type === "Double" || type === "BigInt" || type === "Integer" || type === "Money" || type === "Uniqueidentifier" || type === "State" || type === "Status" || type === "Picklist") {
+			else if (type === "Decimal" || type === "Double" || type === "BigInt" || type === "Integer" || type === "Money" || 
+					type === "Uniqueidentifier" || type === "State" || type === "Status" || type === "Picklist") {
 				if (type !== "State" && type !== "Status" && type !== "Picklist") {
-					filter.push(field + " " + cop + (($(tr).find("input:first").is(":visible") ? " " + value : "")));
+					filter.push(field + " " + cop + (($(tr).find("input:first").is(":visible") ? " " + value : ""))); //bug
 				}
 				else {
-					filter.push(field + " " + cop + (($(tr).find("td:eq(3) select:first").is(":visible") ? " " + value : "")));
+					filter.push(field + " " + cop + (($(tr).find("td:eq(4) select:first").is(":visible") ? " " + value : ""))); //bug
 				}
 			}
 			else if (type === "EntityName") {

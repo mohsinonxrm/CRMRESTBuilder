@@ -4686,12 +4686,13 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 				filter.push("_" + field + "_value" + " " + cop + (($(tr).find("input:first").is(":visible") ? " " + value : "")));
 			}
 			else if (type === "DateTime") {
-				var dateType = attribute[0].DateTimeBehavior.Value;
+				var dateType = attribute[0].Format;
 				if (dateType === "DateOnly") {
 					var dateSplit = value.split("/");
 					filter.push(field + " " + cop + (($(tr).find("input:first").is(":visible") ? " " + dateSplit[2] + "-" + dateSplit[0] + "-" + dateSplit[1] : "")));
 				} else {
-					filter.push(field + " " + cop + (($(tr).find("input:first").is(":visible") ? " " + new Date(value + ((sel !== undefined) ? " " + sel : "")).toISOString() : "")));
+					var timeVal = $(tr).find(".Time").val();
+					filter.push(field + " " + cop + (($(tr).find("input:first").is(":visible") ? " " + new Date(value + ((timeVal !== "") ? " " + timeVal : "")).toISOString() : "")));
 				}
 			}
 			else if (type === "Boolean") {
@@ -4701,10 +4702,10 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 			else if (type === "Decimal" || type === "Double" || type === "BigInt" || type === "Integer" || type === "Money" ||
 				type === "Uniqueidentifier" || type === "State" || type === "Status" || type === "Picklist") {
 				if (type !== "State" && type !== "Status" && type !== "Picklist") {
-					filter.push(field + " " + cop + (($(tr).find("input:first").is(":visible") ? " " + value : ""))); //bug
+					filter.push(field + " " + cop + (($(tr).find("input:first").is(":visible") ? " " + value : "")));
 				}
 				else {
-					filter.push(field + " " + cop + (($(tr).find("td:eq(4) select:first").is(":visible") ? " " + value : ""))); //bug
+					filter.push(field + " " + cop + (($(tr).find("td:eq(4) select:first").is(":visible") ? " " + value : "")));
 				}
 			}
 			else if (type === "EntityName") {
@@ -6927,7 +6928,6 @@ Xrm.RESTBuilder.UnBlockDiv = function (div) {
 Xrm.RESTBuilder.CreateTimePicker = function () {
 	var times = [];
 	times.push("<select class='Time ui-corner-all'>");
-	times.push("<option value=''></option>");
 	times.push("<option value='00:00:00'>12:00am</option>");
 	times.push("<option value='00:30:00'>12:30am</option>");
 	times.push("<option value='01:00:00'>1:00am</option>");

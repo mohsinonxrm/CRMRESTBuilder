@@ -581,10 +581,10 @@ Xrm.RESTBuilder.GetAlternateKeys = function (metadataId) {
 	req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 	req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
 	req.onreadystatechange = function () {
-		if (this.readyState === 4) {
+		if (req.readyState === 4) {
 			req.onreadystatechange = null;
-			if (this.status === 200) {
-				var result = JSON.parse(this.response);
+			if (req.status === 200) {
+				var result = JSON.parse(req.response);
 				var keyAttributes = result.value;
 				for (var i = 0; i < keyAttributes.length; i++) {
 					Xrm.RESTBuilder.CurrentEntityAlternateKeys.push(keyAttributes[i]);
@@ -856,7 +856,7 @@ Xrm.RESTBuilder.GetCsdl = function () {
 
 				// Update the EntitySetName attribute in the Entity drop down 
 				$("#EntityList > option").each(function () {
-					var logicalName = this.attributes["logicalname"].value;
+					var logicalName = req.attributes["logicalname"].value;
 					var entities = $.grep(Xrm.RESTBuilder.EntitySets, function (e) {
 						var metaName = e.attributes["EntityType"].value;
 						var metaLogicalName = metaName.substr(metaName.lastIndexOf(".") + 1);
@@ -865,7 +865,7 @@ Xrm.RESTBuilder.GetCsdl = function () {
 					if (entities.length === 0)
 						return;
 
-					this.attributes["entitysetname"].value = entities[0].attributes["Name"].value;
+					req.attributes["entitysetname"].value = entities[0].attributes["Name"].value;
 				});
 
 				var actions = $(csdl).find("Action").toArray();
@@ -1304,19 +1304,19 @@ Xrm.RESTBuilder.Associate_XMLHTTP = function () {
 	js.push("req.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
-	js.push("        this.onreadystatechange = null;");
-	js.push("        if (this.status === 204 || this.status === 1223) {\n");
+	js.push("    if (req.readyState === 4) {");
+	js.push("        req.onreadystatechange = null;");
+	js.push("        if (req.status === 204 || req.status === 1223) {\n");
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send(JSON.stringify(association));");
 
-	Xrm.RESTBuilder.ReplaceLine = "if (this.status === 204 || this.status === 1223) {";
+	Xrm.RESTBuilder.ReplaceLine = "if (req.status === 204 || req.status === 1223) {";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -1341,19 +1341,19 @@ Xrm.RESTBuilder.Associate_XMLHTTP_WebApi = function () {
 		js.push("req.setRequestHeader(\"MSCRMCallerID\", \"" + $("#ImpersonateId").val() + "\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
-	js.push("        if (this.status === 204 || this.status === 1223) {\n");
+	js.push("        if (req.status === 204 || req.status === 1223) {\n");
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send(JSON.stringify(association));");
 
-	Xrm.RESTBuilder.ReplaceLine = "if (this.status === 204 || this.status === 1223) {";
+	Xrm.RESTBuilder.ReplaceLine = "if (req.status === 204 || req.status === 1223) {";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -1498,19 +1498,19 @@ Xrm.RESTBuilder.Disassociate_XMLHTTP = function () {
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.setRequestHeader(\"X-HTTP-Method\", \"DELETE\");");
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
-	js.push("        this.onreadystatechange = null;");
-	js.push("        if (this.status === 204 || this.status === 1223) {\n");
+	js.push("    if (req.readyState === 4) {");
+	js.push("        req.onreadystatechange = null;");
+	js.push("        if (req.status === 204 || req.status === 1223) {\n");
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send();");
 
-	Xrm.RESTBuilder.ReplaceLine = "if (this.status === 204 || this.status === 1223) {";
+	Xrm.RESTBuilder.ReplaceLine = "if (req.status === 204 || req.status === 1223) {";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -1532,19 +1532,19 @@ Xrm.RESTBuilder.Disassociate_XMLHTTP_WebApi = function () {
 		js.push("req.setRequestHeader(\"MSCRMCallerID\", \"" + $("#ImpersonateId").val() + "\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
-	js.push("        if (this.status === 204 || this.status === 1223) {\n");
+	js.push("        if (req.status === 204 || req.status === 1223) {\n");
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send();");
 
-	Xrm.RESTBuilder.ReplaceLine = "if (this.status === 204 || this.status === 1223) {";
+	Xrm.RESTBuilder.ReplaceLine = "if (req.status === 204 || req.status === 1223) {";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -1678,19 +1678,19 @@ Xrm.RESTBuilder.Delete_XMLHTTP = function () {
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.setRequestHeader(\"X-HTTP-Method\", \"DELETE\");");
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
-	js.push("        this.onreadystatechange = null;");
-	js.push("        if (this.status === 204 || this.status === 1223) {\n");
+	js.push("    if (req.readyState === 4) {");
+	js.push("        req.onreadystatechange = null;");
+	js.push("        if (req.status === 204 || req.status === 1223) {\n");
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send();");
 
-	Xrm.RESTBuilder.ReplaceLine = "if (this.status === 204 || this.status === 1223) {";
+	Xrm.RESTBuilder.ReplaceLine = "if (req.status === 204 || req.status === 1223) {";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -1711,19 +1711,19 @@ Xrm.RESTBuilder.Delete_XMLHTTP_WebApi = function () {
 		js.push("req.setRequestHeader(\"MSCRMCallerID\", \"" + $("#ImpersonateId").val() + "\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
-	js.push("        if (this.status === 204 || this.status === 1223) {\n");
+	js.push("        if (req.status === 204 || req.status === 1223) {\n");
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send();");
 
-	Xrm.RESTBuilder.ReplaceLine = "if (this.status === 204 || this.status === 1223) {";
+	Xrm.RESTBuilder.ReplaceLine = "if (req.status === 204 || req.status === 1223) {";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -1925,20 +1925,20 @@ Xrm.RESTBuilder.Create_XMLHTTP = function (js) {
 	js.push("req.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
-	js.push("        this.onreadystatechange = null;");
-	js.push("        if (this.status === 201) {");
-	js.push("            var result = JSON.parse(this.responseText).d;");
+	js.push("    if (req.readyState === 4) {");
+	js.push("        req.onreadystatechange = null;");
+	js.push("        if (req.status === 201) {");
+	js.push("            var result = JSON.parse(req.responseText).d;");
 	js.push("            var newEntityId = result." + $("select[id=EntityList]").val() + "Id;");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send(JSON.stringify(entity));");
 
-	Xrm.RESTBuilder.ReplaceLine = "var result = JSON.parse(this.responseText).d;";
+	Xrm.RESTBuilder.ReplaceLine = "var result = JSON.parse(req.responseText).d;";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -1961,10 +1961,10 @@ Xrm.RESTBuilder.Create_XMLHTTP_WebApi = function (js) {
 		js.push("req.setRequestHeader(\"MSCRMCallerID\", \"" + $("#ImpersonateId").val() + "\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
-	js.push("        if (this.status === " + ((Xrm.RESTBuilder.ReturnRecord) ? "201" : "204") + ") {");
-	js.push("            var uri = this.getResponseHeader(\"OData-EntityId\");");
+	js.push("        if (req.status === " + ((Xrm.RESTBuilder.ReturnRecord) ? "201" : "204") + ") {");
+	js.push("            var uri = req.getResponseHeader(\"OData-EntityId\");");
 	js.push("            var regExp = \/\\(([^)]+)\\)\/;");
 	js.push("            var matches = regExp.exec(uri);");
 	js.push("            var newEntityId = matches[1];");
@@ -1973,13 +1973,13 @@ Xrm.RESTBuilder.Create_XMLHTTP_WebApi = function (js) {
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send(JSON.stringify(entity));");
 
-	Xrm.RESTBuilder.ReplaceLine = "var uri = this.getResponseHeader(\"OData-EntityId\");";
+	Xrm.RESTBuilder.ReplaceLine = "var uri = req.getResponseHeader(\"OData-EntityId\");";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -2148,19 +2148,19 @@ Xrm.RESTBuilder.Update_XMLHTTP = function (js) {
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.setRequestHeader(\"X-HTTP-Method\", \"MERGE\");");
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
-	js.push("        this.onreadystatechange = null;");
-	js.push("        if (this.status === 204 || this.status === 1223) {\n");
+	js.push("    if (req.readyState === 4) {");
+	js.push("        req.onreadystatechange = null;");
+	js.push("        if (req.status === 204 || req.status === 1223) {\n");
 	js.push("            //Success - No Return Data - Do Something\n");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send(JSON.stringify(entity));");
 
-	Xrm.RESTBuilder.ReplaceLine = "if (this.status === 204 || this.status === 1223) {";
+	Xrm.RESTBuilder.ReplaceLine = "if (req.status === 204 || req.status === 1223) {";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -2190,9 +2190,9 @@ Xrm.RESTBuilder.Update_XMLHTTP_WebApi = function (js) {
 		js.push("req.setRequestHeader(\"If-None-Match\", \"*\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
-	js.push("        if (this.status === " + ((Xrm.RESTBuilder.ReturnRecord) ? "200" : "204") + ") {\n");
+	js.push("        if (req.status === " + ((Xrm.RESTBuilder.ReturnRecord) ? "200" : "204") + ") {\n");
 	if (Xrm.RESTBuilder.ReturnRecord) {
 		js.push("            //Handle returned attributes\n");
 	} else {
@@ -2200,13 +2200,13 @@ Xrm.RESTBuilder.Update_XMLHTTP_WebApi = function (js) {
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send(JSON.stringify(entity));");
 
-	Xrm.RESTBuilder.ReplaceLine = "if (this.status === " + ((Xrm.RESTBuilder.ReturnRecord) ? "200" : "204") + ") {";
+	Xrm.RESTBuilder.ReplaceLine = "if (req.status === " + ((Xrm.RESTBuilder.ReturnRecord) ? "200" : "204") + ") {";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -2361,20 +2361,20 @@ Xrm.RESTBuilder.Retrieve_XMLHTTP = function (selects, expand) {
 	js.push("req.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
-	js.push("        this.onreadystatechange = null;");
-	js.push("        if (this.status === 200) {");
-	js.push("            var result = JSON.parse(this.responseText).d;");
+	js.push("    if (req.readyState === 4) {");
+	js.push("        req.onreadystatechange = null;");
+	js.push("        if (req.status === 200) {");
+	js.push("            var result = JSON.parse(req.responseText).d;");
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 12));
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send();");
 
-	Xrm.RESTBuilder.ReplaceLine = "var result = JSON.parse(this.responseText).d;";
+	Xrm.RESTBuilder.ReplaceLine = "var result = JSON.parse(req.responseText).d;";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -2401,27 +2401,27 @@ Xrm.RESTBuilder.RetrieveNextLink_XMLHTTP_WebApi = function () {
 		js.push("req.setRequestHeader(\"MSCRMCallerID\", \"" + $("#ImpersonateId").val() + "\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
-	js.push("        if (this.status === 200) {");
-	js.push("            var results = JSON.parse(this.response);");
+	js.push("        if (req.status === 200) {");
+	js.push("            var results = JSON.parse(req.response);");
 	js.push(Xrm.RESTBuilder.GenerateResultVarsNextLink_WebApi($("#NextLinkUrl").val(), 12));
 	js.push("        }");
 	if (Xrm.RESTBuilder.DetectChanges) {
-		js.push("        else if (this.status === 304) {\n");
+		js.push("        else if (req.status === 304) {\n");
 		js.push("            //Handle data not changed\n");
 		js.push("        }");
 	}
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send();");
 
-	Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(this.response);";
+	Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(req.response);";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
-	Xrm.RESTBuilder.NoChangeReplaceLine = "else if (this.status === 304) {";
+	Xrm.RESTBuilder.NoChangeReplaceLine = "else if (req.status === 304) {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
 
@@ -2505,27 +2505,27 @@ Xrm.RESTBuilder.Retrieve_XMLHTTP_WebApi = function (selects, expand) {
 		js.push("req.setRequestHeader(\"MSCRMCallerID\", \"" + $("#ImpersonateId").val() + "\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
-	js.push("        if (this.status === 200) {");
-	js.push("            var result = JSON.parse(this.response);");
+	js.push("        if (req.status === 200) {");
+	js.push("            var result = JSON.parse(req.response);");
 	js.push(Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 12));
 	js.push("        }");
 	if (Xrm.RESTBuilder.DetectChanges) {
-		js.push("        else if (this.status === 304) {");
+		js.push("        else if (req.status === 304) {");
 		js.push("            //Handle data not changed\n");
 		js.push("        }");
 	}
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send();");
 
-	Xrm.RESTBuilder.ReplaceLine = "var result = JSON.parse(this.response);";
+	Xrm.RESTBuilder.ReplaceLine = "var result = JSON.parse(req.response);";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
-	Xrm.RESTBuilder.NoChangeReplaceLine = "else if (this.status === 304) {";
+	Xrm.RESTBuilder.NoChangeReplaceLine = "else if (req.status === 304) {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
 
@@ -2755,15 +2755,15 @@ Xrm.RESTBuilder.RetrieveMultiple_XMLHTTP = function (selects, expand, filter, to
 	js.push("req.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
-	js.push("        this.onreadystatechange = null;");
-	js.push("        if (this.status === 200) {");
-	js.push("            var returned = JSON.parse(this.responseText).d;");
+	js.push("    if (req.readyState === 4) {");
+	js.push("        req.onreadystatechange = null;");
+	js.push("        if (req.status === 200) {");
+	js.push("            var returned = JSON.parse(req.responseText).d;");
 	js.push("            var results = returned.results;");
 	js.push(Xrm.RESTBuilder.GenerateResultVars(selects, 12));
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -2796,20 +2796,20 @@ Xrm.RESTBuilder.RetrieveMultiple_XMLHTTP_WebApi = function (selects, expand, fil
 		js.push("req.setRequestHeader(\"MSCRMCallerID\", \"" + $("#ImpersonateId").val() + "\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
-	js.push("        if (this.status === 200) {");
-	js.push("            var results = JSON.parse(this.response);");
+	js.push("        if (req.status === 200) {");
+	js.push("            var results = JSON.parse(req.response);");
 	js.push(Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 12));
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send();");
 
-	Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(this.response);";
+	Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(req.response);";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -2967,19 +2967,19 @@ Xrm.RESTBuilder.PredefinedQuery_XMLHTTP_WebApi = function () {
 		js.push("req.setRequestHeader(\"MSCRMCallerID\", \"" + $("#ImpersonateId").val() + "\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
-	js.push("        if (this.status === 200) {");
-	js.push("            var results = JSON.parse(this.response);");
+	js.push("        if (req.status === 200) {");
+	js.push("            var results = JSON.parse(req.response);");
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send();");
 
-	Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(this.response);";
+	Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(req.response);";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
 	Xrm.RESTBuilder.DisplayOutPut(window.js_beautify(js.join(""), { indent_size: 4 }));
 };
@@ -3049,18 +3049,18 @@ Xrm.RESTBuilder.Action_XMLHTTP_WebApi = function (action, parameters) {
 		js.push("req.setRequestHeader(\"MSCRMCallerID\", \"" + $("#ImpersonateId").val() + "\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
 	if (action.ReturnTypes.length > 0) {
-		js.push("        if (this.status === 200) {");
-		js.push("            var results = JSON.parse(this.response);");
+		js.push("        if (req.status === 200) {");
+		js.push("            var results = JSON.parse(req.response);");
 	} else {
-		js.push("        if (this.status === 204) {\n");
+		js.push("        if (req.status === 204) {\n");
 		js.push("            //Success - No Return Data - Do Something\n");
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
@@ -3069,7 +3069,7 @@ Xrm.RESTBuilder.Action_XMLHTTP_WebApi = function (action, parameters) {
 	else
 		js.push("req.send();");
 	if (action.ReturnTypes.length > 0)
-		Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(this.response);"
+		Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(req.response);"
 	else
 		Xrm.RESTBuilder.ReplaceLine = "//Success - No Return Data - Do Something\n";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";
@@ -3228,25 +3228,25 @@ Xrm.RESTBuilder.Function_XMLHTTP_WebApi = function (func, parameters) {
 		js.push("req.setRequestHeader(\"MSCRMCallerID\", \"" + $("#ImpersonateId").val() + "\");");
 	}
 	js.push("req.onreadystatechange = function() {");
-	js.push("    if (this.readyState === 4) {");
+	js.push("    if (req.readyState === 4) {");
 	js.push("        req.onreadystatechange = null;");
 	if (func.ReturnTypes.length > 0) {
-		js.push("        if (this.status === 200) {");
-		js.push("            var results = JSON.parse(this.response);");
+		js.push("        if (req.status === 200) {");
+		js.push("            var results = JSON.parse(req.response);");
 	} else {
-		js.push("        if (this.status === 204) {");
+		js.push("        if (req.status === 204) {");
 		js.push("            //Success - No Return Data - Do Something\n");
 	}
 	js.push("        }");
 	js.push("        else {");
-	js.push("            " + Xrm.RESTBuilder.Alert("this.statusText") + ";");
+	js.push("            " + Xrm.RESTBuilder.Alert("req.statusText") + ";");
 	js.push("        }");
 	js.push("    }");
 	js.push("};");
 	js.push("req.send();");
 
 	if (func.ReturnTypes.length > 0)
-		Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(this.response);"
+		Xrm.RESTBuilder.ReplaceLine = "var results = JSON.parse(req.response);"
 	else
 		Xrm.RESTBuilder.ReplaceLine = "//Success - No Return Data - Do Something\n";
 	Xrm.RESTBuilder.ErrorReplaceLine = "else {";

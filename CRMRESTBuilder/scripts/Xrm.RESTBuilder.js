@@ -4881,7 +4881,9 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 				break;
 			case "Edm.Guid":
 				var guidValue = Xrm.RESTBuilder.SetDefaultGuid($(tr).find("input:eq(1)").val());
-				parameters.push("parameters." + parameter[0].Name + " = \"" + guidValue + "\";\n");
+				parameters.push("var " + parameter[0].Name.toLowerCase() + " = {};\n");
+				parameters.push(parameter[0].Name.toLowerCase() + ".guid = \"" + guidValue + "\";\n");
+				parameters.push("parameters." + parameter[0].Name + " = " + parameter[0].Name.toLowerCase() + ";\n");
 				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, guidValue));
 				break;
 			default:

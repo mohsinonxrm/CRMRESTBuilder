@@ -7189,7 +7189,8 @@ Xrm.RESTBuilder.REST_Lookup_WebApi = function (schemaOrLogicalName, id, entitySe
 	if (entities.length === 0)
 		return output;
 	var navProps = $.grep($(entities[0]).children().filter("NavigationProperty"), function (e) {
-		return e.attributes.Name.value.toLowerCase() === (schemaOrLogicalName + name).toLowerCase();
+		return e.attributes.Name.value.toLowerCase() === (schemaOrLogicalName + name).toLowerCase() ||
+			e.attributes.Name.value.toLowerCase() === (schemaOrLogicalName + name + "_" + Xrm.RESTBuilder.EntityLogical).toLowerCase();
 	});
 	if (navProps.length === 0)
 		return "entity[\"" + schemaOrLogicalName + "@odata.bind\"] = \"/" + entitySetName + "(" + id + ")\";\n";

@@ -6879,7 +6879,7 @@ Xrm.RESTBuilder.Alert = function (message) {
 	if ((Xrm.RESTBuilder.CrmVersion[0] >= 6 && Xrm.RESTBuilder.CrmVersion[0] < 9) || Xrm.RESTBuilder.Endpoint === "2011") {
 		return "Xrm.Utility.alertDialog(" + message + ")";
 	}
-	return "Xrm.Navigation.openAlertDialog({ confirmButtonLabel: 'OK', text: " + message + ", title: 'Error' })";
+	return "Xrm.Navigation.openAlertDialog({ confirmButtonLabel: \"OK\', text: " + message + ", title: \"Error\" })";
 }
 
 Xrm.RESTBuilder.DisplayAlert = function (message) {

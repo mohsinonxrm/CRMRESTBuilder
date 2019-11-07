@@ -980,6 +980,8 @@ Xrm.RESTBuilder.ToggleWebApiFunctionality = function () {
 			$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
 		}
 	}
+
+	Xrm.RESTBuilder.ODataPath = Xrm.Page.context.getClientUrl() + "/api/data/v" + $("#WebApiVersion option:selected").val() + "/";
 }
 
 Xrm.RESTBuilder.ProcessActions = function (e) {

@@ -991,6 +991,11 @@ Xrm.RESTBuilder.ProcessActions = function (e) {
 	action.Name = $(e).attr("Name");
 	action.IsBound = ($(e).attr("IsBound") === undefined) ? false : true;
 	action.Entity = "none";
+	var isCustomAction = false;
+	if (action.Name.indexOf("_") > 0 && action.Name.indexOf("msdyn_") !== 0) {
+		isCustomAction = true;
+	}
+	action.IsCustomAction = isCustomAction;
 	var parameters = $(e).find("Parameter").toArray();
 	var returnTypes = $(e).find("ReturnType").toArray();
 
@@ -1027,6 +1032,7 @@ Xrm.RESTBuilder.ProcessFunctions = function (functions) {
 		func.Name = $(functions[i]).attr("Name");
 		func.IsBound = ($(functions[i]).attr("IsBound") === undefined) ? false : true;
 		func.Entity = "none";
+		func.IsCustomAction = false;
 		var parameters = $(functions[i]).find("Parameter").toArray();
 		var returnTypes = $(functions[i]).find("ReturnType").toArray();
 
@@ -1209,7 +1215,13 @@ Xrm.RESTBuilder.CreateInputParameters = function (item) {
 				break;
 			case "Edm.Binary":
 			case "Edm.String":
-				ctrl = "<input type='text' class='String ui-corner-all ui-widget' />";
+				if (item.Parameters[i].Name === "EntityName" && !item.IsCustomAction) {
+					ctrl = "<select class='ui-corner-all ParameterEntity'></select>";
+					populateParameterEntityLists = true;
+				}
+				else {
+					ctrl = "<input type='text' class='String ui-corner-all ui-widget' />";
+				}
 				break;
 			case "Edm.Guid":
 				ctrl = "<input type='text' class='Guid focus ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />";
@@ -4709,7 +4721,7 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 				}
 			}
 			else if (type === "EntityName") {
-				filter.push(field + " " + cop + " '" + $(tr).find("td:eq(3) select:first option:selected").attr("logicalname") + "'");
+				filter.push(field + " " + cop + " '" + $(tr).find("td:eq(4) select:first option:selected").attr("logicalname") + "'");
 			}
 			else {
 				filter.push(field + " " + cop + (($(tr).find("input:first").is(":visible") ? " " + "'" + value + "'" : "")));
@@ -4875,7 +4887,13 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 				break;
 			case "Edm.Binary":
 			case "Edm.String":
-				var stringValue = $(tr).find("input:eq(1)").val();
+				var stringValue = "";
+				if (parameter[0].Name === "EntityName" && !item.IsCustomAction) {
+					stringValue = $(tr).find("select:first option:selected").attr("logicalname");
+				}
+				else {
+					stringValue = $(tr).find("input:eq(1)").val();
+				}
 				parameters.push("parameters." + parameter[0].Name + " = \"" + stringValue + "\";\n");
 				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "'" + stringValue + "'"));
 				break;

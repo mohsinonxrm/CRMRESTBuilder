@@ -4191,6 +4191,9 @@ Xrm.RESTBuilder.BuildObjectString_WebApi = function () {
 			case "Boolean":
 				js.push(Xrm.RESTBuilder.REST_Boolean(logical, sel1));
 				break;
+			case "ManagedProperty":
+				js.push(Xrm.RESTBuilder.REST_BooleanManagedProperty_WeApi(logical, sel1));
+				break;
 			case "State":
 			case "Status":
 			case "Picklist":
@@ -4690,7 +4693,7 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 		cop = cop.replace("[field] ", "");
 
 		var val = null;
-		if (type === "Boolean" || type === "State" || type === "Status" || type === "Picklist") {
+		if (type === "Boolean" || type === "State" || type === "Status" || type === "Picklist" || "ManagedProperty") {
 			if ($(tr).find("td:eq(4) select:first").is(":visible")) {
 				val = $(tr).find("td:eq(4) select:first").val();
 			}
@@ -4744,6 +4747,9 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 			else if (type === "Boolean") {
 				var booleanValue = (value === "0") ? "false" : "true";
 				filter.push(field + " " + cop + (($(tr).find("td:eq(4) select:first").is(":visible") ? " " + booleanValue : "")));
+			}
+			else if (type === "ManagedProperty") {
+				filter.push(field + "/Value " + cop + (($(tr).find("td:eq(4) select:first").is(":visible") ? " " + value : "")));
 			}
 			else if (type === "Decimal" || type === "Double" || type === "BigInt" || type === "Integer" || type === "Money" ||
 				type === "Uniqueidentifier" || type === "State" || type === "Status" || type === "Picklist") {
@@ -6716,6 +6722,13 @@ Xrm.RESTBuilder.Attribute_Change = function () {
 					}
 					$(tr).find("td:eq(3)").find("select")[0].selectedIndex = -1;
 					break;
+				case "ManagedProperty":
+					if (attribute[0].ValueAttributeTypeCode === "Boolean") {
+						var boolItems4 = "<option value='null'></option><option value='true'>True</option><option value='false'>False</option>";
+						$(tr).find("td:eq(3)").html("<select class='Boolean ui-corner-all'>" + boolItems4 + "</select>");
+						$(tr).find("td:eq(3)").find("select")[0].selectedIndex = -1;
+					}
+					break;
 			}
 			$(tr).find("td:eq(2)").html(attribute[0].AttributeType);
 		} else {
@@ -6780,6 +6793,13 @@ Xrm.RESTBuilder.Attribute_Change = function () {
 						$($(tr).find("td:eq(3)").find("select")[0]).prepend("<option entitysetname='' logicalname='none' objecttypecode='' value='None' title='None'>None</option>");
 					}
 					$(tr).find("td:eq(4)").find("select")[0].selectedIndex = -1;
+					break;
+				case "ManagedProperty":
+					if (attribute[0].ValueAttributeTypeCode === "Boolean") {
+						var boolItems3 = "<option value='null'></option><option value='true'>True</option><option value='false'>False</option>";
+						$(tr).find("td:eq(4)").html("<select class='Boolean ui-corner-all'>" + boolItems3 + "</select>");
+						$(tr).find("td:eq(4)").find("select")[0].selectedIndex = -1;
+					}
 					break;
 			}
 			$(tr).find("td:eq(2)").html(attribute[0].AttributeType);
@@ -7270,6 +7290,13 @@ Xrm.RESTBuilder.REST_Picklist_WebApi = function (logicalName, value) {
 	else
 		return "entity." + logicalName + " = " + value + ";\n";
 };
+
+//Create REST Boolean Managed Property  - Web API
+Xrm.RESTBuilder.REST_BooleanManagedProperty_WeApi = function (logicalName, value) {
+	var output = "entity." + logicalName + " = {};\n"
+	output += "entity." + logicalName + ".Value = " + value + ";\n";
+	return output;
+}
 
 //Create REST Money
 Xrm.RESTBuilder.REST_Money = function (schemaOrLogicalName, value, precision) {

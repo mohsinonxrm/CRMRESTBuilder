@@ -615,15 +615,50 @@ Xrm.RESTBuilder.IsUnsearchable = function (schemaName) {
 }
 
 Xrm.RESTBuilder.IsInternalAction = function (name) {
-	//Not sure if there is a better way to determine this, but these actions are returned in the CSDL but marked as internal only according to MSDN
-	var entities = ["AddChannelAccessProfilePrivileges"];
+	//Not sure if there is a better way to determine this, but these actions are returned in the CSDL but marked as internal only or for future use according to MSDN
+	var entities = ["AddChannelAccessProfilePrivileges", "CloneMobileOfflineProfile", "msdyn_AcceptProposedBooking", "msdyn_AcceptTeamRecommendation", "msdyn_AddInvoiceLineDetails",
+		"msdyn_applyworktemplate", "msdyn_applyworktemplateforresources", "msdyn_ApprovalStatusApprove", "msdyn_ApprovalStatusReject", "msdyn_AssignGenericResource",
+		"msdyn_AutoGenerateProjectTeam", "msdyn_batchentityCUD", "msdyn_BookingResource", "msdyn_BookingResourceRequirement", "msdyn_BulkCreatePredecessorsForTask",
+		"msdyn_BulkDeletePredecessorsForTask", "msdyn_CancelBookings", "msdyn_ChangeRequestStatus", "msdyn_cloneentity", "msdyn_CloseAllOpportunityQuotes",
+		"msdyn_CloseQuoteAsLost", "msdyn_CloseQuoteAsWon", "msdyn_CompleteResourceRequest", "msdyn_CopyProject", "msdyn_CopyRelatedProjectEntitiesFromTemplate",
+		"msdyn_CopyWbsToProject", "msdyn_CorrectInvoice", "msdyn_CreateContractLineDetailsFromEstimate", "msdyn_CreateContractSpecificPriceList", "msdyn_CreateEstimateLines",
+		"msdyn_CreateEstimatesForProjectTask", "msdyn_CreateExtensionRequirement", "msdyn_createinvoicefrominvoiceschedule", "msdyn_CreateQuoteFromOpportunity",
+		"msdyn_CreateQuoteLineDetailsFromEstimate", "msdyn_CreateQuoteSpecificPriceList", "msdyn_createrequestfromrequirement", "msdyn_CreateSharepointDocumentLocation",
+		"msdyn_CreateTaskBasedEstimatesForProject", "msdyn_CreateTemplateFromProject", "msdyn_DeleteEstimateLines", "msdyn_DeleteEstimatesForProjectTask",
+		"msdyn_ExpandResourceAssignment", "msdyn_ExpenseApproveAction", "msdyn_ExpenseEntriesApprove", "msdyn_ExpenseEntriesPendingApproval", "msdyn_ExpenseEntriesRecall",
+		"msdyn_ExpenseEntriesReject", "msdyn_ExpenseEntriesSubmit", "msdyn_ExpenseRejectAction", "msdyn_ExpenseSubmitAction", "msdyn_ExportActual", "msdyn_FetchProjectCalendarWorkHours",
+		"msdyn_FieldServiceSystemAction", "msdyn_FpsAction", "msdyn_FulfillResourceDemand", "msdyn_GenerateContractLineInvoiceSchedule", "msdyn_GenerateContractLineScheduleOfValues",
+		"msdyn_GenerateQuoteLineInvoiceSchedule", "msdyn_GenerateQuoteLineScheduleOfValues", "msdyn_GeocodeAddress", "msdyn_GetAvailabilitySummaryFromDemand",
+		"msdyn_GetBookingDetailsByRequirementIds", "msdyn_GetBookingDetailsByResource", "msdyn_GetCollectionData", "msdyn_GetContractBillingRadialGaugeData",
+		"msdyn_GetContractDetailedTransactions", "msdyn_GetContractEffortRadialGaugeData", "msdyn_GetContractLineChargeability", "msdyn_GetContractLines",
+		"msdyn_GetDataForContractPerformance", "msdyn_GetDataForRadialGauge", "msdyn_GetDocumentManagementSettings", "msdyn_GetDocumentStorePath", "msdyn_GetEstimatesforProject",
+		"msdyn_GetGenericResourceDetails", "msdyn_GetMultipleResourceBookingDetails", "msdyn_GetMyChangedSkills", "msdyn_GetOfficeGroupForEntity", "msdyn_GetPrice",
+		"msdyn_GetProcessNotes", "msdyn_GetProductLine", "msdyn_GetProductLines", "msdyn_GetProjectCoparticipation", "msdyn_GetProjectCurrencies", "msdyn_GetProjectDetails",
+		"msdyn_GetProjectMapForContractLine", "msdyn_GetProjectMapForQuoteLine", "msdyn_GetProjects", "msdyn_GetProjectsForContract", "msdyn_GetProjectsForQuote",
+		"msdyn_GetProjectTaskCategories", "msdyn_GetProposedResources", "msdyn_GetQuoteLineChargeability", "msdyn_GetRequirementChartData", "msdyn_GetRequirementDemand",
+		"msdyn_GetRequirementDemandDisplay", "msdyn_GetResourceAvailability", "msdyn_GetResourceAvailabilitySummary", "msdyn_GetResourceBookingByProject",
+		"msdyn_GetResourceBookingDetails", "msdyn_GetResourceBookingFormParameters", "msdyn_GetResourceDemandTimeLine", "msdyn_GetResourcePopupDetails", "msdyn_GetResources",
+		"msdyn_GetSummaryBookings", "msdyn_GetTimelineData", "msdyn_GetTransactionUnitPrices", "msdyn_GetUserTimeZoneName", "msdyn_IndentWBSTask", "msdyn_initializedefaultclonequery",
+		"msdyn_InvoicePaid", "msdyn_InvoiceRecalculate", "msdyn_IoTSendTestAlert", "msdyn_IsProjectTemplatesView", "msdyn_JoinProjectTeam", "msdyn_LoadFactTableEstimate",
+		"msdyn_LogFindWorkEvent", "msdyn_MarkIntegrationJobAsFailedAsync", "msdyn_MoveDownWBSTask", "msdyn_MoveProject", "msdyn_MoveUpWBSTask", "msdyn_MSProject_ExportToProject",
+		"msdyn_MSProject_GetFindResourcesURL", "msdyn_MSProject_LinkToProject", "msdyn_MSProject_PublishToExistingProject", "msdyn_MSProject_ReadFromExistingProject",
+		"msdyn_MSProject_ReadProjectTeamMembers", "msdyn_MSProject_UnlinkFromProject", "msdyn_NewInvoiceContract", "msdyn_OutdentWBSTask", "msdyn_ParentIoTAlerts",
+		"msdyn_PostInvoice", "msdyn_PostJournal", "msdyn_ProjectTeamMemberSignUpProcess", "msdyn_ProjectTeamMemberSignupprocessaccept", "msdyn_ProjectTeamUpdateMembershipStatus",
+		"msdyn_ReadEstimateLines", "msdyn_recallrequestforrequirement", "msdyn_RecommendWork", "msdyn_RejectProposedBooking", "msdyn_ResAssignResourcesForTask",
+		"msdyn_ResGetResourceDetail", "msdyn_ResolveTimezone", "msdyn_ResourceAssignmentDetailUpdate", "msdyn_ResourceReservationCancel", "msdyn_ResourceSubstitution",
+		"msdyn_ResourceUtilization", "msdyn_ResourceUtilizationChart", "msdyn_RetrieveDistanceMatrix", "msdyn_RetrieveResourceAvailability", "msdyn_SaveProjectLineTasks",
+		"msdyn_SetDefaultRole", "msdyn_SubmitCategoriesAndPriceLists", "msdyn_SubmitRolesAndPriceLists", "msdyn_TimeEntriesApprove", "msdyn_TimeEntriesCopyPaste",
+		"msdyn_TimeEntriesPaste", "msdyn_TimeEntriesPendingApproval", "msdyn_TimeEntriesRecall", "msdyn_TimeEntriesReject", "msdyn_TimeEntriesSubmit",
+		"msdyn_UpdateAllEstimatesForProject", "msdyn_UpdateChangedSkills", "msdyn_UpdateEffortContour", "msdyn_UpdateEstimateLineDetails", "msdyn_UpdateEstimateLines",
+		"msdyn_updateprojecttask", "msdyn_updateremainingresourcerequirement", "msdyn_UpdateRequirementDemand", "msdyn_ValidateFixedPriceLineTotals", "SetFeatureStatus",
+		"SetProcess", "UpdateFeatureConfig"];
 
 	return ((entities.indexOf(name) !== -1) ? true : false);
 }
 
 Xrm.RESTBuilder.IsInternalFunction = function (name) {
 	//Not sure if there is a better way to determine this, but these functions are returned in the CSDL but marked as internal only according to MSDN
-	var entities = ["RetrieveChannelAccessProfilePrivileges", "CloneMobileOfflineProfile"];
+	var entities = ["RetrievePrincipalSyncAttributeMappings"];
 
 	return ((entities.indexOf(name) !== -1) ? true : false);
 }

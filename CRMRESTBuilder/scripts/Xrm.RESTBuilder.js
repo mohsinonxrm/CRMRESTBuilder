@@ -599,18 +599,11 @@ Xrm.RESTBuilder.GetAlternateKeys = function (metadataId) {
 
 Xrm.RESTBuilder.IsUnsearchable = function (schemaName) {
 	//Not sure if there is a better way to determine this, but these entities returned errors when manually attempting to query them
-	var entities = ["AppModuleMetadata", "AppModuleMetadataDependency", "AppModuleMetadataOperationLog", "AuthorizationServer", "BusinessDataLocalizedLabel",
-		"BusinessProcessFlowInstance", "CalendarRule", "ChildIncidentCount", "Commitment", "ComplexControl", "DelveActionHub", "DependencyFeature", "DocumentIndex",
-		"GlobalSearchConfiguration", "ImageDescriptor", "IntegrationStatus", "LookUpMapping", "msdyn_solutioncomponentdatasource", "MultiEntitySearch",
-		"MultiEntitySearchEntities", "MultiSelectAttributeOptionValues", "OfficeDocument", "OfficeGraphDocument", "Owner", "PartnerApplication", "PostRegarding",
-		"PostRole", "PrincipalAttributeAccessMap", "PrincipalEntityMap", "PrincipalObjectAccessReadSnapshot", "PrincipalSyncAttributeMap", "QueueItemCount",
-		"QueueMemberCount", "RecordCountSnapshot", "RibbonClientMetadata", "RollupJob", "RollupProperties", "RuntimeDependency", "SalesProcessInstance",
-		"SharedObjectsForRead", "SharePointData", "SimilarityRule", "SqlEncryptionAudit", "Subscription", "SubscriptionClients", "SubscriptionManuallyTrackedObject",
-		"SubscriptionStatisticsOffline", "SubscriptionStatisticsOutlook", "SubscriptionSyncEntryOffline", "SubscriptionSyncEntryOutlook", "SubscriptionSyncInfo",
-		"SubscriptionTrackingDeletedObject", "SyncAttributeMapping", "SyncAttributeMappingProfile", "SystemApplicationMetadata", "SystemUserManagerMap",
-		"SystemUserSyncMappingProfiles", "TeamSyncAttributeMappingProfiles", "TimeStampDateMapping", "TraceAssociation", "TraceRegarding", "UntrackedEmail",
-		"UserApplicationMetadata", "UserSearchFacet", "WorkflowWaitSubscription", "LocalConfigStore", "MetadataDifference", "RecommendedDocument"];
-
+	var entities = ["Attribute", "CalendarRule", "ComplexControl", "DataPerformance", "Entity", "holidaywrapper", "LanguageProvisioningState",
+		"LookUpMapping", "OfficeGraphDocument", "OptionSet", "PostRegarding", "PrincipalEntityMap", "RuntimeDependency", "SimilarityRule",
+		"SubscriptionManuallyTrackedObject", "SubscriptionStatisticsOffline", "SubscriptionStatisticsOutlook", "SubscriptionSyncEntryOffline",
+		"SubscriptionSyncEntryOutlook", "SystemUserSyncMappingProfiles", "TeamSyncAttributeMappingProfiles", "TimeStampDateMapping",
+	];
 	return ((entities.indexOf(schemaName) !== -1) ? true : false);
 }
 

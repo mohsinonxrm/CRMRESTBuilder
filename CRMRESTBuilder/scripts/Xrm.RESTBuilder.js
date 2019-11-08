@@ -424,8 +424,6 @@ Xrm.RESTBuilder.GetAllEntityMetadata = function () {
 
 	var attributesFilter = new mdq.MetadataFilterExpression(mdq.LogicalOperator.And);
 	attributesFilter.addCondition(samp.AttributeType, mdq.MetadataConditionOperator.NotEquals, "Virtual");
-	attributesFilter.addCondition(samp.SchemaName, mdq.MetadataConditionOperator.NotEquals, "Address1_Composite");
-	attributesFilter.addCondition(samp.SchemaName, mdq.MetadataConditionOperator.NotEquals, "Address2_Composite");
 	attributesFilter.addCondition(samp.IsValidForCreate, mdq.MetadataConditionOperator.Equals, true);
 	attributesFilter.addCondition(samp.AttributeOf, mdq.MetadataConditionOperator.Equals, null);
 	attributesFilter.addCondition(samp.RequiredLevel, mdq.MetadataConditionOperator.Equals, "ApplicationRequired");
@@ -503,8 +501,6 @@ Xrm.RESTBuilder.GetAttributeMetadata = function (name, callBack, ctrl) {
 	var entityProperties = new mdq.MetadataPropertiesExpression(false, [emp.Attributes, emp.SchemaName, emp.ManyToManyRelationships, emp.ManyToOneRelationships, emp.OneToManyRelationships, emp.IsActivity]);
 	var attributesFilter = new mdq.MetadataFilterExpression(mdq.LogicalOperator.And);
 	attributesFilter.addCondition(samp.AttributeType, mdq.MetadataConditionOperator.NotEquals, "Virtual");
-	attributesFilter.addCondition(samp.SchemaName, mdq.MetadataConditionOperator.NotEquals, "Address1_Composite");
-	attributesFilter.addCondition(samp.SchemaName, mdq.MetadataConditionOperator.NotEquals, "Address2_Composite");
 	attributesFilter.addCondition(samp.AttributeType, mdq.MetadataConditionOperator.NotEquals, "PartyList");
 	attributesFilter.addCondition(samp.IsValidForRead, mdq.MetadataConditionOperator.Equals, true);
 	attributesFilter.addCondition(samp.AttributeOf, mdq.MetadataConditionOperator.Equals, null);

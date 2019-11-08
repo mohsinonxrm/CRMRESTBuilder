@@ -1226,7 +1226,7 @@ Xrm.RESTBuilder.CreateInputParameters = function (item) {
 				}
 				break;
 			case "Edm.Guid":
-				ctrl = "<input type='text' class='Guid focus ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />";
+				ctrl = "<input type='text' class='Guid focus ui-corner-all' maxlength='36' placeholder='" + Xrm.RESTBuilder.MakeValidGuid(null) + "' />";
 				break;
 			default:
 				if (item.Parameters[i].Type === "Collection(Edm.String)") {
@@ -1236,7 +1236,7 @@ Xrm.RESTBuilder.CreateInputParameters = function (item) {
 					ctrl = "<input type='text' id='" + item.Parameters[i].Name + "' class='Integer ui-corner-all' placeholder='Integer' />";
 				}
 				else if (Xrm.RESTBuilder.IsParameterEntity(item.Parameters[i].Type) || Xrm.RESTBuilder.IsParameterCollection(item.Parameters[i].Type)) {
-					ctrl = "<input type='text' class='Guid focus ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />";
+					ctrl = "<input type='text' class='Guid focus ui-corner-all' maxlength='36' placeholder='" + Xrm.RESTBuilder.MakeValidGuid(null) + "' />";
 					if (item.Parameters[i].Type === "mscrm.crmbaseentity" || item.Parameters[i].Type === "Collection(mscrm.crmbaseentity)") {
 						entityCtrl = "<select class='ui-corner-all ParameterEntity'></select>"
 						populateParameterEntityLists = true;
@@ -1266,9 +1266,9 @@ Xrm.RESTBuilder.CreateInputParameters = function (item) {
 Xrm.RESTBuilder.Associate_XST = function () {
 	var js = [];
 	js.push("XrmServiceToolkit.Rest.Associate(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + "\",");
 	js.push("    \"" + $("#AssociateEntity1 option:selected").text() + "Set\",");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + "\",");
 	js.push("    \"" + $("#AssociateEntity2 option:selected").text() + "Set\",");
 	js.push("    \"" + $("#AssociateRelationship option:selected").val() + "\",");
 	js.push("    function() {\n");
@@ -1288,10 +1288,10 @@ Xrm.RESTBuilder.Associate_XST = function () {
 Xrm.RESTBuilder.Associate_SDK = function () {
 	var js = [];
 	js.push("SDK.REST.associateRecords(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + "\",");
 	js.push("    \"" + $("#AssociateEntity1 option:selected").text() + "\",");
 	js.push("    \"" + $("#AssociateRelationship option:selected").val() + "\",");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + "\",");
 	js.push("    \"" + $("#AssociateEntity2 option:selected").text() + "\",");
 	js.push("    function() {\n");
 	js.push("        //Success - No Return Data - Do Something\n");
@@ -1310,10 +1310,10 @@ Xrm.RESTBuilder.Associate_XMLHTTP = function () {
 	var js = [];
 	js.push("var association = {};");
 	js.push("association.uri = Xrm.Page.context.getClientUrl() + \"/XRMServices/2011/OrganizationData.svc/" + $("#AssociateEntity2 option:selected").text() +
-		"Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + "')\";");
+		"Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + "')\";");
 	js.push("var req = new XMLHttpRequest();");
 	js.push("req.open(\"POST\", Xrm.Page.context.getClientUrl() + \"/XRMServices/2011/OrganizationData.svc/" + $("#AssociateEntity1 option:selected").text() +
-		"Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + "')/$links/" + $("#AssociateRelationship option:selected").val() +
+		"Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + "')/$links/" + $("#AssociateRelationship option:selected").val() +
 		"\", " + Xrm.RESTBuilder.Async + ");");
 	js.push("req.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
@@ -1339,11 +1339,11 @@ Xrm.RESTBuilder.Associate_XMLHTTP_WebApi = function () {
 	var js = [];
 	js.push("var association = {");
 	js.push("\"@odata.id\": Xrm.Page.context.getClientUrl() + \"/api/data/v" + $("#WebApiVersion option:selected").val() + "/" + $("#AssociateEntity2 option:selected").attr("entitysetname") +
-		"(" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + ")\"");
+		"(" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + ")\"");
 	js.push("};");
 	js.push("var req = new XMLHttpRequest();");
 	js.push("req.open(\"POST\", Xrm.Page.context.getClientUrl() + \"/api/data/v" + $("#WebApiVersion option:selected").val() + "/" + $("#AssociateEntity1 option:selected").attr("entitysetname") +
-		"(" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + ")/" + $("#AssociateRelationship option:selected").attr("webapivalue") + "/$ref\", " + Xrm.RESTBuilder.Async + ");");
+		"(" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + ")/" + $("#AssociateRelationship option:selected").attr("webapivalue") + "/$ref\", " + Xrm.RESTBuilder.Async + ");");
 	js.push("req.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.setRequestHeader(\"OData-MaxVersion\", \"4.0\");");
@@ -1376,14 +1376,14 @@ Xrm.RESTBuilder.Associate_jQuery_WebApi = function () {
 	var js = [];
 	js.push("var association = {");
 	js.push("\"@odata.id\": Xrm.Page.context.getClientUrl() + \"/api/data/v" + $("#WebApiVersion option:selected").val() + "/" + $("#AssociateEntity2 option:selected").attr("entitysetname") +
-		"(" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + ")\"");
+		"(" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + ")\"");
 	js.push("};");
 	js.push("$.ajax({");
 	js.push("    type: \"POST\",");
 	js.push("    contentType: \"application/json; charset=utf-8\",");
 	js.push("    datatype: \"json\",");
 	js.push("    url: " + "Xrm.Page.context.getClientUrl() + \"/api/data/v" + $("#WebApiVersion option:selected").val() + "/" + $("#AssociateEntity1 option:selected").attr("entitysetname") +
-		"(" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + ")/" + $("#AssociateRelationship option:selected").attr("webapivalue") + "/$ref\",");
+		"(" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + ")/" + $("#AssociateRelationship option:selected").attr("webapivalue") + "/$ref\",");
 	js.push("    data: JSON.stringify(association),");
 	js.push("    beforeSend: function(XMLHttpRequest) {");
 	js.push("        XMLHttpRequest.setRequestHeader(\"OData-MaxVersion\", \"4.0\");");
@@ -1414,13 +1414,13 @@ Xrm.RESTBuilder.Associate_jQuery = function () {
 	var js = [];
 	js.push("var association = {};");
 	js.push("association.uri = Xrm.Page.context.getClientUrl() + \"/XRMServices/2011/OrganizationData.svc/" + $("#AssociateEntity2 option:selected").text() +
-		"Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + "')\";");
+		"Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + "')\";");
 	js.push("$.ajax({");
 	js.push("    type: \"POST\",");
 	js.push("    contentType: \"application/json; charset=utf-8\",");
 	js.push("    datatype: \"json\",");
 	js.push("    url: " + "Xrm.Page.context.getClientUrl() + \"/XRMServices/2011/OrganizationData.svc/" + $("#AssociateEntity1 option:selected").text() +
-		"Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + "')/$links/" + $("#AssociateRelationship option:selected").val() + "\",");
+		"Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + "')/$links/" + $("#AssociateRelationship option:selected").val() + "\",");
 	js.push("    data: JSON.stringify(association),");
 	js.push("    beforeSend: function(XMLHttpRequest) {");
 	js.push("        XMLHttpRequest.setRequestHeader(\"Accept\", \"application/json\");");
@@ -1443,9 +1443,9 @@ Xrm.RESTBuilder.Associate_XSVC = function () {
 	var js = [];
 	js.push("XrmSvcToolkit.associate({");
 	js.push("    entity1Name: \"" + $("#AssociateEntity1 option:selected").text() + "\",");
-	js.push("    entity1Id: \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + "\",");
+	js.push("    entity1Id: \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + "\",");
 	js.push("    entity2Name: \"" + $("#AssociateEntity2 option:selected").text() + "\",");
-	js.push("    entity2Id: \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + "\",");
+	js.push("    entity2Id: \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + "\",");
 	js.push("    relationshipName: \"" + $("#AssociateRelationship option:selected").val() + "\",");
 	js.push("    async: " + Xrm.RESTBuilder.Async + ",");
 	js.push("    successCallback: function() {\n");
@@ -1464,9 +1464,9 @@ Xrm.RESTBuilder.Associate_XSVC = function () {
 Xrm.RESTBuilder.Disassociate_XST = function () {
 	var js = [];
 	js.push("XrmServiceToolkit.Rest.Disassociate(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + "\",");
 	js.push("    \"" + $("#AssociateEntity1 option:selected").text() + "Set\",");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + "\",");
 	js.push("    \"" + $("#AssociateRelationship option:selected").val() + "\",");
 	js.push("    function () {\n");
 	js.push("         //Success - No Return Data - Do Something\n");
@@ -1485,10 +1485,10 @@ Xrm.RESTBuilder.Disassociate_XST = function () {
 Xrm.RESTBuilder.Disassociate_SDK = function () {
 	var js = [];
 	js.push("SDK.REST.disassociateRecords(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + "\",");
 	js.push("    \"" + $("#AssociateEntity1 option:selected").text() + "\",");
 	js.push("    \"" + $("#AssociateRelationship option:selected").val() + "\",");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + "\",");
 	js.push("    function() {\n");
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
@@ -1506,8 +1506,8 @@ Xrm.RESTBuilder.Disassociate_XMLHTTP = function () {
 	var js = [];
 	js.push("var req = new XMLHttpRequest();");
 	js.push("req.open(\"POST\", Xrm.Page.context.getClientUrl() + \"/XRMServices/2011/OrganizationData.svc/" + $("#AssociateEntity1 option:selected").text() +
-		"Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + "')/$links/" + $("#AssociateRelationship option:selected").val() +
-		"(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + "')\", " + Xrm.RESTBuilder.Async + ");");
+		"Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + "')/$links/" + $("#AssociateRelationship option:selected").val() +
+		"(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + "')\", " + Xrm.RESTBuilder.Async + ");");
 	js.push("req.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.setRequestHeader(\"X-HTTP-Method\", \"DELETE\");");
@@ -1533,8 +1533,8 @@ Xrm.RESTBuilder.Disassociate_XMLHTTP_WebApi = function () {
 	var js = [];
 	js.push("var req = new XMLHttpRequest();");
 	js.push("req.open(\"DELETE\", Xrm.Page.context.getClientUrl() + \"/api/data/v" + $("#WebApiVersion option:selected").val() + "/" + $("#AssociateEntity1 option:selected").attr("entitysetname") +
-		"(" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + ")/" + $("#AssociateRelationship option:selected").attr("webapivalue") + "(" +
-		Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + ")/$ref\", " + Xrm.RESTBuilder.Async + ");");
+		"(" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + ")/" + $("#AssociateRelationship option:selected").attr("webapivalue") + "(" +
+		Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + ")/$ref\", " + Xrm.RESTBuilder.Async + ");");
 	js.push("req.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.setRequestHeader(\"OData-MaxVersion\", \"4.0\");");
@@ -1570,8 +1570,8 @@ Xrm.RESTBuilder.Disassociate_jQuery_WebApi = function () {
 	js.push("    contentType: \"application/json; charset=utf-8\",");
 	js.push("    datatype: \"json\",");
 	js.push("    url: " + "Xrm.Page.context.getClientUrl() + \"/api/data/v" + $("#WebApiVersion option:selected").val() + "/" + $("#AssociateEntity1 option:selected").attr("entitysetname") +
-		"(" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + ")/" + $("#AssociateRelationship option:selected").attr("webapivalue") + "(" +
-		Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + ")/$ref\",");
+		"(" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + ")/" + $("#AssociateRelationship option:selected").attr("webapivalue") + "(" +
+		Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + ")/$ref\",");
 	js.push("    beforeSend: function(XMLHttpRequest) {");
 	js.push("        XMLHttpRequest.setRequestHeader(\"OData-MaxVersion\", \"4.0\");");
 	js.push("        XMLHttpRequest.setRequestHeader(\"OData-Version\", \"4.0\");");
@@ -1604,8 +1604,8 @@ Xrm.RESTBuilder.Disassociate_jQuery = function () {
 	js.push("    contentType: \"application/json; charset=utf-8\",");
 	js.push("    datatype: \"json\",");
 	js.push("    url: " + "Xrm.Page.context.getClientUrl() + \"/XRMServices/2011/OrganizationData.svc/" + $("#AssociateEntity1 option:selected").text() +
-		"Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + "')/$links/" + $("#AssociateRelationship option:selected").val() + "(guid'" +
-		Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + "')\",");
+		"Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + "')/$links/" + $("#AssociateRelationship option:selected").val() + "(guid'" +
+		Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + "')\",");
 	js.push("    beforeSend: function(XMLHttpRequest) {");
 	js.push("        XMLHttpRequest.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("        XMLHttpRequest.setRequestHeader(\"X-HTTP-Method\", \"DELETE\");");
@@ -1628,9 +1628,9 @@ Xrm.RESTBuilder.Disassociate_XSVC = function () {
 	var js = [];
 	js.push("XrmSvcToolkit.disassociate({");
 	js.push("    entity1Name: \"" + $("#AssociateEntity1 option:selected").text() + "\",");
-	js.push("    entity1Id: \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId1").val()) + "\",");
+	js.push("    entity1Id: \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId1").val()) + "\",");
 	js.push("    entity2Name: \"" + $("#AssociateEntity2 option:selected").text() + "\",");
-	js.push("    entity2Id: \"" + Xrm.RESTBuilder.SetDefaultGuid($("#AssociateId2").val()) + "\",");
+	js.push("    entity2Id: \"" + Xrm.RESTBuilder.MakeValidGuid($("#AssociateId2").val()) + "\",");
 	js.push("    relationshipName: \"" + $("#AssociateRelationship option:selected").val() + "\",");
 	js.push("    async: " + Xrm.RESTBuilder.Async + ",");
 	js.push("    successCallback: function() {\n");
@@ -1649,7 +1649,7 @@ Xrm.RESTBuilder.Disassociate_XSVC = function () {
 Xrm.RESTBuilder.Delete_XST = function () {
 	var js = [];
 	js.push("XrmServiceToolkit.Rest.Delete(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#DeleteId").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#DeleteId").val()) + "\",");
 	js.push("    \"" + Xrm.RESTBuilder.EntitySchema + "Set\",");
 	js.push("    function() {\n");
 	js.push("         //Success - No Return Data - Do Something\n");
@@ -1668,7 +1668,7 @@ Xrm.RESTBuilder.Delete_XST = function () {
 Xrm.RESTBuilder.Delete_SDK = function () {
 	var js = [];
 	js.push("SDK.REST.deleteRecord(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#DeleteId").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#DeleteId").val()) + "\",");
 	js.push("    \"" + Xrm.RESTBuilder.EntitySchema + "\",");
 	js.push("    function() {\n");
 	js.push("        //Success - No Return Data - Do Something\n");
@@ -1687,7 +1687,7 @@ Xrm.RESTBuilder.Delete_XMLHTTP = function () {
 	var js = [];
 	js.push("var req = new XMLHttpRequest();");
 	js.push("req.open(\"POST\", Xrm.Page.context.getClientUrl() + \"/XRMServices/2011/OrganizationData.svc/" + Xrm.RESTBuilder.EntitySchema +
-		"Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#DeleteId").val()) + "')\", " + Xrm.RESTBuilder.Async + ");");
+		"Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#DeleteId").val()) + "')\", " + Xrm.RESTBuilder.Async + ");");
 	js.push("req.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.setRequestHeader(\"X-HTTP-Method\", \"DELETE\");");
@@ -1778,7 +1778,7 @@ Xrm.RESTBuilder.Delete_jQuery_WebApi = function () {
 Xrm.RESTBuilder.Delete_XrmWebApi_WebApi = function () {
 	var js = [];
 	// Xrm.WebApi doesn't support using alternate keys yet
-	js.push("Xrm.WebApi.online.deleteRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + Xrm.RESTBuilder.SetDefaultGuid($("#DeleteId").val()) + "\").then(\n");
+	js.push("Xrm.WebApi.online.deleteRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + Xrm.RESTBuilder.MakeValidGuid($("#DeleteId").val()) + "\").then(\n");
 	js.push("    function success(result) {\n");
 	js.push("        //Success - No Return Data - Do Something\n");
 	js.push("    },");
@@ -1799,7 +1799,7 @@ Xrm.RESTBuilder.Delete_jQuery = function () {
 	js.push("    contentType: \"application/json; charset=utf-8\",");
 	js.push("    datatype: \"json\",");
 	js.push("    url: " + "Xrm.Page.context.getClientUrl() + " + "\"/XRMServices/2011/OrganizationData.svc/" + Xrm.RESTBuilder.EntitySchema + "Set(guid'" +
-		Xrm.RESTBuilder.SetDefaultGuid($("#DeleteId").val()) + "')\",");
+		Xrm.RESTBuilder.MakeValidGuid($("#DeleteId").val()) + "')\",");
 	js.push("    beforeSend: function(XMLHttpRequest) {");
 	js.push("        XMLHttpRequest.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("        XMLHttpRequest.setRequestHeader(\"X-HTTP-Method\", \"DELETE\");");
@@ -1821,7 +1821,7 @@ Xrm.RESTBuilder.Delete_jQuery = function () {
 Xrm.RESTBuilder.Delete_SDKJQ = function () {
 	var js = [];
 	js.push("SDK.JQuery.deleteRecord(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#DeleteId").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#DeleteId").val()) + "\",");
 	js.push("    \"" + Xrm.RESTBuilder.EntitySchema + "\",");
 	js.push("    function() {\n");
 	js.push("        //Success - No Return Data - Do Something\n");
@@ -1840,7 +1840,7 @@ Xrm.RESTBuilder.Delete_XSVC = function () {
 	var js = [];
 	js.push("XrmSvcToolkit.deleteRecord({");
 	js.push("    entityName: \"" + Xrm.RESTBuilder.EntitySchema + "\",");
-	js.push("    id: \"" + Xrm.RESTBuilder.SetDefaultGuid($("#DeleteId").val()) + "\",");
+	js.push("    id: \"" + Xrm.RESTBuilder.MakeValidGuid($("#DeleteId").val()) + "\",");
 	js.push("    async: " + Xrm.RESTBuilder.Async + ",");
 	js.push("    successCallback: function() {\n");
 	js.push("         //Success - No Return Data - Do Something\n");
@@ -2075,7 +2075,7 @@ Xrm.RESTBuilder.Create_XSVC = function (js) {
 
 Xrm.RESTBuilder.Update_XST = function (js) {
 	js.push("XrmServiceToolkit.Rest.Update(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#UpdateId").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#UpdateId").val()) + "\",");
 	js.push("    entity,");
 	js.push("    \"" + Xrm.RESTBuilder.EntitySchema + "Set\",");
 	js.push("    function() {\n");
@@ -2094,7 +2094,7 @@ Xrm.RESTBuilder.Update_XST = function (js) {
 
 Xrm.RESTBuilder.Update_SDK = function (js) {
 	js.push("SDK.REST.updateRecord(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#UpdateId").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#UpdateId").val()) + "\",");
 	js.push("    entity,");
 	js.push("    \"" + Xrm.RESTBuilder.EntitySchema + "\",");
 	js.push("    function() {\n");
@@ -2116,7 +2116,7 @@ Xrm.RESTBuilder.Update_jQuery = function (js) {
 	js.push("    contentType: \"application/json; charset=utf-8\",");
 	js.push("    datatype: \"json\",");
 	js.push("    url: " + "Xrm.Page.context.getClientUrl() + " + "\"/XRMServices/2011/OrganizationData.svc/" +
-		Xrm.RESTBuilder.EntitySchema + "Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#UpdateId").val()) + "')\",");
+		Xrm.RESTBuilder.EntitySchema + "Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#UpdateId").val()) + "')\",");
 	js.push("    data: JSON.stringify(entity),");
 	js.push("    beforeSend: function(XMLHttpRequest) {");
 	js.push("        XMLHttpRequest.setRequestHeader(\"Accept\", \"application/json\");");
@@ -2138,7 +2138,7 @@ Xrm.RESTBuilder.Update_jQuery = function (js) {
 
 Xrm.RESTBuilder.Update_SDKJQ = function (js) {
 	js.push("SDK.JQuery.updateRecord(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#UpdateId").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#UpdateId").val()) + "\",");
 	js.push("    entity,");
 	js.push("    \"" + Xrm.RESTBuilder.EntitySchema + "\",");
 	js.push("    function() {\n");
@@ -2157,7 +2157,7 @@ Xrm.RESTBuilder.Update_SDKJQ = function (js) {
 Xrm.RESTBuilder.Update_XMLHTTP = function (js) {
 	js.push("var req = new XMLHttpRequest();");
 	js.push("req.open(\"POST\", Xrm.Page.context.getClientUrl() + \"/XRMServices/2011/OrganizationData.svc/" + Xrm.RESTBuilder.EntitySchema +
-		"Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#UpdateId").val()) + "')\", " + Xrm.RESTBuilder.Async + ");");
+		"Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#UpdateId").val()) + "')\", " + Xrm.RESTBuilder.Async + ");");
 	js.push("req.setRequestHeader(\"Accept\", \"application/json\");");
 	js.push("req.setRequestHeader(\"Content-Type\", \"application/json; charset=utf-8\");");
 	js.push("req.setRequestHeader(\"X-HTTP-Method\", \"MERGE\");");
@@ -2274,7 +2274,7 @@ Xrm.RESTBuilder.Update_jQuery_WebApi = function (js) {
 
 Xrm.RESTBuilder.Update_XrmWebApi_WebApi = function (js) {
 	// Xrm.WebApi doesn't support using alternate keys yet
-	js.push("Xrm.WebApi.online.updateRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + Xrm.RESTBuilder.SetDefaultGuid($("#UpdateId").val()) + "\", entity).then(\n");
+	js.push("Xrm.WebApi.online.updateRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + Xrm.RESTBuilder.MakeValidGuid($("#UpdateId").val()) + "\", entity).then(\n");
 	js.push("    function success(result) {");
 	js.push("        var updatedEntityId = result.id;");
 	js.push("    },");
@@ -2291,7 +2291,7 @@ Xrm.RESTBuilder.Update_XrmWebApi_WebApi = function (js) {
 Xrm.RESTBuilder.Update_XSVC = function (js) {
 	js.push("XrmSvcToolkit.updateRecord({");
 	js.push("    entityName: \"" + Xrm.RESTBuilder.EntitySchema + "\",");
-	js.push("    id: \"" + Xrm.RESTBuilder.SetDefaultGuid($("#UpdateId").val()) + "\",");
+	js.push("    id: \"" + Xrm.RESTBuilder.MakeValidGuid($("#UpdateId").val()) + "\",");
 	js.push("    entity: entity,");
 	js.push("    async: " + Xrm.RESTBuilder.Async + ",");
 	js.push("    successCallback: function() {\n");
@@ -2310,7 +2310,7 @@ Xrm.RESTBuilder.Update_XSVC = function (js) {
 Xrm.RESTBuilder.Retrieve_XST = function (selects, expand) {
 	var js = [];
 	js.push("XrmServiceToolkit.Rest.Retrieve(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#RetrieveId").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#RetrieveId").val()) + "\",");
 	js.push("    \"" + Xrm.RESTBuilder.EntitySchema + "Set\",");
 	var seft = Xrm.RESTBuilder.BuildRESTString(selects, null, null, null, null, null);
 	if (seft !== null && seft !== undefined) {
@@ -2339,7 +2339,7 @@ Xrm.RESTBuilder.Retrieve_XST = function (selects, expand) {
 Xrm.RESTBuilder.Retrieve_SDK = function (selects, expand) {
 	var js = [];
 	js.push("SDK.REST.retrieveRecord(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#RetrieveId").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#RetrieveId").val()) + "\",");
 	js.push("    \"" + Xrm.RESTBuilder.EntitySchema + "\",");
 	var seft = Xrm.RESTBuilder.BuildRESTString(selects, null, null, null, null, null);
 	if (seft !== null && seft !== undefined) {
@@ -2368,7 +2368,7 @@ Xrm.RESTBuilder.Retrieve_XMLHTTP = function (selects, expand) {
 	var js = [];
 	js.push("var req = new XMLHttpRequest();");
 	js.push("req.open(\"GET\", Xrm.Page.context.getClientUrl() + \"/XRMServices/2011/OrganizationData.svc/" +
-		Xrm.RESTBuilder.EntitySchema + "Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#RetrieveId").val()) + "')");
+		Xrm.RESTBuilder.EntitySchema + "Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#RetrieveId").val()) + "')");
 	var seft = Xrm.RESTBuilder.BuildRESTString(selects, expand, null, null, null, null);
 	js.push(((seft === null) ? "" : seft) + "\", ");
 	js.push(Xrm.RESTBuilder.Async + ");");
@@ -2605,7 +2605,7 @@ Xrm.RESTBuilder.Retrieve_XrmWebApi_WebApi = function (selects, expand) {
 	var js = [];
 	// Xrm.WebApi doesn't support using alternate keys yet
 	var seft = Xrm.RESTBuilder.BuildRESTString(selects, expand, null, null, null, null);
-	js.push("Xrm.WebApi.online.retrieveRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + Xrm.RESTBuilder.SetDefaultGuid($("#RetrieveId").val()) + "\", \"" + seft + "\").then(\n");
+	js.push("Xrm.WebApi.online.retrieveRecord(\"" + Xrm.RESTBuilder.EntityLogical + "\", \"" + Xrm.RESTBuilder.MakeValidGuid($("#RetrieveId").val()) + "\", \"" + seft + "\").then(\n");
 	js.push("    function success(result) {");
 	js.push(Xrm.RESTBuilder.GenerateResultVars_WebApi(selects, expand, 4));
 	js.push("    },");
@@ -2626,7 +2626,7 @@ Xrm.RESTBuilder.Retrieve_jQuery = function (selects, expand) {
 	js.push("    contentType: \"application/json; charset=utf-8\",");
 	js.push("    datatype: \"json\",");
 	js.push("    url: " + "Xrm.Page.context.getClientUrl() + " + "\"/XRMServices/2011/OrganizationData.svc/" +
-		Xrm.RESTBuilder.EntitySchema + "Set(guid'" + Xrm.RESTBuilder.SetDefaultGuid($("#RetrieveId").val()) + "')");
+		Xrm.RESTBuilder.EntitySchema + "Set(guid'" + Xrm.RESTBuilder.MakeValidGuid($("#RetrieveId").val()) + "')");
 	var seft = Xrm.RESTBuilder.BuildRESTString(selects, expand, null, null, null, null);
 	js.push(((seft === null) ? "" : seft) + "\",");
 	js.push("    beforeSend: function(XMLHttpRequest) {");
@@ -2650,7 +2650,7 @@ Xrm.RESTBuilder.Retrieve_jQuery = function (selects, expand) {
 Xrm.RESTBuilder.Retrieve_SDKJQ = function (selects, expand) {
 	var js = [];
 	js.push("SDK.JQuery.retrieveRecord(");
-	js.push("    \"" + Xrm.RESTBuilder.SetDefaultGuid($("#RetrieveId").val()) + "\",");
+	js.push("    \"" + Xrm.RESTBuilder.MakeValidGuid($("#RetrieveId").val()) + "\",");
 	js.push("    \"" + Xrm.RESTBuilder.EntitySchema + "\",");
 	var seft = Xrm.RESTBuilder.BuildRESTString(selects, null, null, null, null, null);
 	if (seft !== null && seft !== undefined) {
@@ -2679,7 +2679,7 @@ Xrm.RESTBuilder.Retrieve_XSVC = function (selects, expand) {
 	var js = [];
 	js.push("XrmSvcToolkit.retrieve({");
 	js.push("    entityName: \"" + Xrm.RESTBuilder.EntitySchema + "\",");
-	js.push("    id: \"" + Xrm.RESTBuilder.SetDefaultGuid($("#RetrieveId").val()) + "\",");
+	js.push("    id: \"" + Xrm.RESTBuilder.MakeValidGuid($("#RetrieveId").val()) + "\",");
 	var seft = Xrm.RESTBuilder.BuildRESTString(selects, null, null, null, null, null);
 	var selectItems = [];
 	if (seft !== null && seft !== undefined) {
@@ -2964,7 +2964,7 @@ Xrm.RESTBuilder.PredefinedQuery_XMLHTTP_WebApi = function () {
 	if ($("#PredefinedQueryType").val() === "FetchXML") {
 		js.push(Xrm.RESTBuilder.CleanFetchXml(Xrm.RESTBuilder.FetchEditor.getValue()));
 	} else {
-		js.push(Xrm.RESTBuilder.SetDefaultGuid($("#QueryId").val()));
+		js.push(Xrm.RESTBuilder.MakeValidGuid($("#QueryId").val()));
 	}
 	js.push("\", " + Xrm.RESTBuilder.Async + ");");
 	js.push("req.setRequestHeader(\"OData-MaxVersion\", \"4.0\");");
@@ -3009,7 +3009,7 @@ Xrm.RESTBuilder.PredefinedQuery_jQuery_WebApi = function () {
 	if ($("#PredefinedQueryType").val() === "FetchXML") {
 		js.push(Xrm.RESTBuilder.CleanFetchXml(Xrm.RESTBuilder.FetchEditor.getValue()));
 	} else {
-		js.push(Xrm.RESTBuilder.SetDefaultGuid($("#QueryId").val()));
+		js.push(Xrm.RESTBuilder.MakeValidGuid($("#QueryId").val()));
 	}
 	js.push("\",");
 	js.push("    beforeSend: function(XMLHttpRequest) {");
@@ -3049,7 +3049,7 @@ Xrm.RESTBuilder.Action_XMLHTTP_WebApi = function (action, parameters) {
 	if (action.Entity === "none") { //Unbound
 		js.push(action.Name);
 	} else { //Bound
-		js.push(Xrm.RESTBuilder.EntitySetName + "(" + Xrm.RESTBuilder.SetDefaultGuid($("#TargetId").val()) + ")/Microsoft.Dynamics.CRM." + action.Name);
+		js.push(Xrm.RESTBuilder.EntitySetName + "(" + Xrm.RESTBuilder.MakeValidGuid($("#TargetId").val()) + ")/Microsoft.Dynamics.CRM." + action.Name);
 	}
 	js.push("\", " + Xrm.RESTBuilder.Async + ");");
 	js.push("req.setRequestHeader(\"OData-MaxVersion\", \"4.0\");");
@@ -3101,7 +3101,7 @@ Xrm.RESTBuilder.Action_jQuery_WebApi = function (action, parameters) {
 	if (action.Entity === "none") { // Unbound
 		js.push(action.Name);
 	} else { //Bound
-		js.push(Xrm.RESTBuilder.EntitySetName + "(" + Xrm.RESTBuilder.SetDefaultGuid($("#TargetId").val()) + ")/Microsoft.Dynamics.CRM." + action.Name);
+		js.push(Xrm.RESTBuilder.EntitySetName + "(" + Xrm.RESTBuilder.MakeValidGuid($("#TargetId").val()) + ")/Microsoft.Dynamics.CRM." + action.Name);
 	}
 	js.push("\",");
 	if (parameters) {
@@ -3224,7 +3224,7 @@ Xrm.RESTBuilder.Function_XMLHTTP_WebApi = function (func, parameters) {
 	if (func.Entity === "none") { //Unbound
 		js.push(func.Name);
 	} else { //Bound
-		js.push(Xrm.RESTBuilder.EntitySetName + "(" + Xrm.RESTBuilder.SetDefaultGuid($("#TargetId").val()) + ")/Microsoft.Dynamics.CRM." + func.Name);
+		js.push(Xrm.RESTBuilder.EntitySetName + "(" + Xrm.RESTBuilder.MakeValidGuid($("#TargetId").val()) + ")/Microsoft.Dynamics.CRM." + func.Name);
 	}
 	if (parameters)
 		js.push("(" + Xrm.RESTBuilder.CreateGetParameterAliases(parameters) + ")?" + parameters);
@@ -3277,7 +3277,7 @@ Xrm.RESTBuilder.Function_jQuery_WebApi = function (func, parameters) {
 	if (func.Entity === "none") { //Unbound
 		js.push(func.Name);
 	} else { //Bound
-		js.push(Xrm.RESTBuilder.EntitySetName + "(" + Xrm.RESTBuilder.SetDefaultGuid($("#TargetId").val()) + ")/Microsoft.Dynamics.CRM." + func.Name);
+		js.push(Xrm.RESTBuilder.EntitySetName + "(" + Xrm.RESTBuilder.MakeValidGuid($("#TargetId").val()) + ")/Microsoft.Dynamics.CRM." + func.Name);
 	}
 	if (parameters)
 		js.push("(" + Xrm.RESTBuilder.CreateGetParameterAliases(parameters) + ")?" + parameters);
@@ -4042,7 +4042,7 @@ Xrm.RESTBuilder.GenerateResultVars_WebApi = function (selects, expand, spaces) {
 
 Xrm.RESTBuilder.GenerateIdAlternateKeys = function (action) {
 	if ($("#" + action + "GUID").is(":visible")) {
-		return Xrm.RESTBuilder.SetDefaultGuid($("#" + action + "Id").val());
+		return Xrm.RESTBuilder.MakeValidGuid($("#" + action + "Id").val());
 	} else {
 		var keys = [];
 		var rows = $("#AlternateKey" + action + "Table").find("tbody tr");
@@ -4050,10 +4050,11 @@ Xrm.RESTBuilder.GenerateIdAlternateKeys = function (action) {
 			var inputField = $(rows[i]).find("input:first");
 			var logical = $(rows[i]).find("td:first").html();
 			var field = $.grep(Xrm.RESTBuilder.CurrentEntityAttributes, function (e) { return e.LogicalName === logical; })[0];
+			var id = inputField.val().replace(/\"/g, '\\"');
 			if (field.AttributeType === "String") {
-				keys.push(logical + "='" + inputField.val() + "'");
+				keys.push(logical + "='" + id + "'");
 			} else {
-				keys.push(logical + "=" + inputField.val());
+				keys.push(logical + "=" + id);
 			}
 		}
 
@@ -4371,12 +4372,14 @@ Xrm.RESTBuilder.CreateFilterEntities = function (oneToMany, manyToOne, manyToMan
 
 Xrm.RESTBuilder.BuildTopString = function () {
 	var top = $("#TopAmount").val();
-	return (top !== "") ? "$top=" + $("#TopAmount").val() : null;
+	top = Xrm.RESTBuilder.MakeValidNumber(top);
+	return (top !== "") ? "$top=" + top : null;
 };
 
 Xrm.RESTBuilder.BuildTopString_WebApi = function () {
 	var top = $("#TopAmount").val();
-	return (top !== "") ? "odata.maxpagesize=" + $("#TopAmount").val() : null;
+	top = Xrm.RESTBuilder.MakeValidNumber(top);
+	return (top !== "") ? "odata.maxpagesize=" + top : null;
 };
 
 Xrm.RESTBuilder.BuildCountString_WebApi = function () {
@@ -4385,7 +4388,8 @@ Xrm.RESTBuilder.BuildCountString_WebApi = function () {
 
 Xrm.RESTBuilder.BuildSkipString = function () {
 	var skip = $("#SkipAmount").val();
-	return (skip !== "") ? "$skip=" + $("#SkipAmount").val() : null;
+	skip = Xrm.RESTBuilder.MakeValidNumber(skip);
+	return (skip !== "") ? "$skip=" + skip : null;
 };
 
 Xrm.RESTBuilder.BuildPrefer = function (annotations, top, returnRecord) {
@@ -4857,16 +4861,27 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 				break;
 			case "Edm.Double":
 			case "Edm.Decimal":
+				var numberValue = $(tr).find("input:eq(1)").val();
+				if (!numberValue)
+					numberValue = 0;
+				else
+					numberValue = Xrm.RESTBuilder.MakeValidNumber(numberValue, true);
+				parameters.push("parameters." + parameter[0].Name + " = " + numberValue + ";\n");
+				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, numberValue));
+				break;
 			case "Edm.Int32":
 			case "Edm.Int64":
 				var numberValue = $(tr).find("input:eq(1)").val();
 				if (!numberValue)
 					numberValue = 0;
+				else
+					numberValue = Xrm.RESTBuilder.MakeValidNumber(numberValue);
 				parameters.push("parameters." + parameter[0].Name + " = " + numberValue + ";\n");
 				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, numberValue));
 				break;
 			case "mscrm.Label":
 				var labelValue = $(tr).find("input:eq(1)").val();
+				labelValue = Xrm.RESTBuilder.MakeValidString(labelValue);
 				if (parameter[0].Optional && labelValue === "")
 					continue;
 				parameters.push("var " + parameter[0].Name.toLowerCase() + " = {};\n");
@@ -4896,11 +4911,13 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 				else {
 					stringValue = $(tr).find("input:eq(1)").val();
 				}
+				stringValue = Xrm.RESTBuilder.MakeValidString(stringValue);
 				parameters.push("parameters." + parameter[0].Name + " = \"" + stringValue + "\";\n");
 				getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "'" + stringValue + "'"));
 				break;
 			case "Edm.Guid":
-				var guidValue = Xrm.RESTBuilder.SetDefaultGuid($(tr).find("input:eq(1)").val());
+				var guidValue = $(tr).find("input:eq(1)").val();
+				guidValue = Xrm.RESTBuilder.MakeValidGuid(guidValue);
 				parameters.push("var " + parameter[0].Name.toLowerCase() + " = {};\n");
 				parameters.push(parameter[0].Name.toLowerCase() + ".guid = \"" + guidValue + "\";\n");
 				parameters.push("parameters." + parameter[0].Name + " = " + parameter[0].Name.toLowerCase() + ";\n");
@@ -4909,6 +4926,7 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 			default:
 				if (parameter[0].Type === "Collection(Edm.String)") {
 					var stringValue = $(tr).find("input:eq(1)").val();
+					stringValue = Xrm.RESTBuilder.MakeValidString(stringValue);
 					parameters.push("parameters." + parameter[0].Name + " = [\"" + stringValue + "\"];\n");
 					getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "['" + stringValue + "']"));
 				}
@@ -4916,6 +4934,8 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 					var numberValue = $(tr).find("input:eq(1)").val();
 					if (!numberValue)
 						numberValue = 0;
+					else
+						numberValue = Xrm.RESTBuilder.MakeValidNumber(numberValue);
 					parameters.push("parameters." + parameter[0].Name + " = [" + numberValue + "];\n");
 					getParameters.push(Xrm.RESTBuilder.CreateGetParameter(parameter[0].Name, "[" + numberValue + "]"));
 				}
@@ -4937,7 +4957,8 @@ Xrm.RESTBuilder.BuildParameters = function (item, returnGetParameters) {
 						parameterName = parameterName + "1";
 
 					parameters.push("var " + parameterName + " = {};\n");
-					var guidValue = Xrm.RESTBuilder.SetDefaultGuid($(tr).find("input:eq(1)").val());
+					var guidValue = $(tr).find("input:eq(1)").val();
+					guidValue = Xrm.RESTBuilder.MakeValidGuid(guidValue);
 					parameters.push(parameterName + "." + primaryIdAttribute + " = \"" + guidValue + "\"; //Delete if creating new record \n");
 
 					var parameterEntityLogical = Xrm.RESTBuilder.ParameterTypeToEntityName(parameter[0].Type);
@@ -5038,7 +5059,7 @@ Xrm.RESTBuilder.BuildParametersForEntity = function (type, paramName, entityType
 				primaryIdAttribute = Xrm.RESTBuilder.GetPrimaryIdAttribute(entityLogical);
 				entitySetName = Xrm.RESTBuilder.GetEntitySetName(entityLogical);
 			}
-			parameters.push(variableName + "[\"" + primaryIdAttribute + "@odata.bind\"] = \"/" + entitySetName + "(00000000-0000-0000-0000-000000000000)\";\n");
+			parameters.push(variableName + "[\"" + primaryIdAttribute + "@odata.bind\"] = \"/" + entitySetName + "(" + Xrm.RESTBuilder.MakeValidGuid(null) + ")\";\n");
 			break;
 		default:
 			parameters.push(variableName + "." + paramName + " = \"" + type + " Not Handled" + "\";\n");
@@ -6619,7 +6640,7 @@ Xrm.RESTBuilder.Attribute_Change = function () {
 					Xrm.RESTBuilder.MakeSpinner(attribute[0].MinValue, attribute[0].MaxValue, 1, attribute[0].LogicalName);
 					break;
 				case "Uniqueidentifier":
-					$(tr).find("td:eq(3)").html("<input type='text' class='Uniqueidentifier ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />");
+					$(tr).find("td:eq(3)").html("<input type='text' class='Uniqueidentifier ui-corner-all' maxlength='36' placeholder='" + Xrm.RESTBuilder.MakeValidGuid(null) + "' />");
 					break;
 				case "Memo":
 				case "String":
@@ -6642,7 +6663,7 @@ Xrm.RESTBuilder.Attribute_Change = function () {
 				case "Owner":
 				case "Customer":
 				case "Lookup":
-					$(tr).find("td:eq(3)").html("<input type='text' class='Guid ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />");
+					$(tr).find("td:eq(3)").html("<input type='text' class='Guid ui-corner-all' maxlength='36' placeholder='" + Xrm.RESTBuilder.MakeValidGuid(null) + "' />");
 					$(tr).find("td:eq(4)").append($("#EntityList").clone().attr("id", null));
 					Xrm.RESTBuilder.ApplyLookupTargets($(tr).find("select:eq(1)"), attribute[0].Targets);
 					break;
@@ -6689,7 +6710,7 @@ Xrm.RESTBuilder.Attribute_Change = function () {
 					Xrm.RESTBuilder.MakeSpinner(attribute[0].MinValue, attribute[0].MaxValue, 1, attribute[0].LogicalName);
 					break;
 				case "Uniqueidentifier":
-					$(tr).find("td:eq(4)").html("<input type='text' class='Uniqueidentifier ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />");
+					$(tr).find("td:eq(4)").html("<input type='text' class='Uniqueidentifier ui-corner-all' maxlength='36' placeholder='" + Xrm.RESTBuilder.MakeValidGuid(null) + "' />");
 					break;
 				case "Memo":
 				case "String":
@@ -6710,7 +6731,7 @@ Xrm.RESTBuilder.Attribute_Change = function () {
 				case "Owner":
 				case "Customer":
 				case "Lookup":
-					$(tr).find("td:eq(4)").html("<input type='text' class='Guid ui-corner-all' maxlength='36' placeholder='00000000-0000-0000-0000-000000000000' />");
+					$(tr).find("td:eq(4)").html("<input type='text' class='Guid ui-corner-all' maxlength='36' placeholder='" + Xrm.RESTBuilder.MakeValidGuid(null) + "' />");
 					break;
 				case "DateTime":
 					var isDateTime = attribute[0].Format === "DateAndTime";
@@ -6775,6 +6796,7 @@ Xrm.RESTBuilder.Expand_Change = function () {
 
 Xrm.RESTBuilder.TopAmount_Change = function () {
 	var top = $("#TopAmount").val();
+	top = Xrm.RESTBuilder.MakeValidNumber(top);
 	if (Xrm.RESTBuilder.Endpoint === "WebApi") {
 		if (top > 5000) {
 			$("#TopAmount").val(5000);
@@ -6889,6 +6911,9 @@ Xrm.RESTBuilder.ValidateSelectedFetchXmlEntity = function () {
 	var xmlDoc = $.parseXML(xml);
 	var $xml = $(xmlDoc);
 	var $entityName = $xml.find("entity").attr("name");
+	if (!$entityName) {
+		return false;
+	}
 	return Xrm.RESTBuilder.EntityLogical === $entityName.toLowerCase();
 }
 
@@ -7168,12 +7193,14 @@ Xrm.RESTBuilder.GetWebApi_StructuralProperty_Value = function (type) {
 
 //Create REST String
 Xrm.RESTBuilder.REST_String = function (schemaOrLogicalName, value) {
+	value = Xrm.RESTBuilder.MakeValidString(value);
 	return "entity." + schemaOrLogicalName + " = \"" + value + "\";\n";
 };
 
 //Create REST Lookup and Customer
 Xrm.RESTBuilder.REST_Lookup = function (schemaOrLogicalName, id, entityName) {
 	var name = (id === "" || id === null) ? "null" : entityName.toLowerCase();
+	id = Xrm.RESTBuilder.MakeValidGuid(id);
 	return "entity." + schemaOrLogicalName + " = {\n" +
 		"            Id: \"" + id + "\",\n" +
 		"            LogicalName: \"" + name + "\"\n" +
@@ -7183,7 +7210,7 @@ Xrm.RESTBuilder.REST_Lookup = function (schemaOrLogicalName, id, entityName) {
 //Create REST Lookup and Customer - Web API
 Xrm.RESTBuilder.REST_Lookup_WebApi = function (schemaOrLogicalName, id, entitySetName, entityName) {
 	var name = (entityName === "" || entityName === null) ? "" : "_" + entityName;
-
+	id = Xrm.RESTBuilder.MakeValidGuid(id);
 	var entities = $.grep(Xrm.RESTBuilder.EntityTypes, function (e) {
 		return e.attributes.Name.value === Xrm.RESTBuilder.EntityLogical;
 	});
@@ -7220,32 +7247,40 @@ Xrm.RESTBuilder.REST_Picklist_WebApi = function (logicalName, value) {
 Xrm.RESTBuilder.REST_Money = function (schemaOrLogicalName, value, precision) {
 	if (value === "" || value === null)
 		return "entity." + schemaOrLogicalName + " = { Value: null };\n";
-	else
+	else {
+		value = Xrm.RESTBuilder.MakeValidNumber(value, true);
 		return "entity." + schemaOrLogicalName + " = { Value: parseFloat(" + value + ").toFixed(" + precision + ") };\n";
+	}
 };
 
 //Create REST Money - Web API
 Xrm.RESTBuilder.REST_Money_WebApi = function (logicalname, value, precision) {
 	if (value === "" || value === null)
 		return "entity." + logicalname + " = null;\n";
-	else
+	else {
+		value = Xrm.RESTBuilder.MakeValidNumber(value, true);
 		return "entity." + logicalname + " = Number(parseFloat(" + value + ").toFixed(" + precision + "));\n";
+	}
 };
 
 //Create REST Decimal and Double/Float
 Xrm.RESTBuilder.REST_Decimal = function (schemaOrLogicalName, value, precision) {
 	if (value === "" || value === null)
 		return "entity." + schemaOrLogicalName + " = null;\n";
-	else
+	else {
+		value = Xrm.RESTBuilder.MakeValidNumber(value, true);
 		return "entity." + schemaOrLogicalName + " = parseFloat(" + value + ").toFixed(" + precision + ");\n";
+	}
 };
 
 //Create REST Decimal and Double/Float - Web API
 Xrm.RESTBuilder.REST_Decimal_WebApi = function (schemaOrLogicalName, value) {
 	if (value === "" || value === null)
 		return "entity." + schemaOrLogicalName + " = null;\n";
-	else
+	else {
+		value = Xrm.RESTBuilder.MakeValidNumber(value, true);
 		return "entity." + schemaOrLogicalName + " = " + value + ";\n";
+	}
 };
 
 //Create REST Boolean
@@ -7289,24 +7324,30 @@ Xrm.RESTBuilder.REST_DateTime_WebApi = function (logicalName, date, time) {
 Xrm.RESTBuilder.REST_Integer = function (schemaOrLogicalName, value) {
 	if (value === "" || value === null)
 		return "entity." + schemaOrLogicalName + " = null;\n";
-	else
+	else {
+		value = Xrm.RESTBuilder.MakeValidNumber(value);
 		return "entity." + schemaOrLogicalName + " = " + value + ";\n";
+	}
 };
 
 //Create REST Uniqueidentifier
 Xrm.RESTBuilder.REST_Uniqueidentifier = function (schemaOrLogicalName, value) {
 	if (value === "" || value === null)
 		return "entity." + schemaOrLogicalName + " = null;\n";
-	else
+	else {
+		value = Xrm.RESTBuilder.MakeValidGuid(value);
 		return "entity." + schemaOrLogicalName + " = \"" + value + "\";\n";
+	}
 };
 
 //Create REST EntityName
 Xrm.RESTBuilder.REST_EntityName = function (schemaOrLogicalName, value) {
 	if (value === "" || value === null)
-		return "entity." + schemaOrLogicalName + " = '';\n";
-	else
+		return "entity." + schemaOrLogicalName + " = \"\";\n";
+	else {
+		value = Xrm.RESTBuilder.MakeValidGuid(value);
 		return "entity." + schemaOrLogicalName + " = '" + value + "';\n";
+	}
 }
 
 Xrm.RESTBuilder.CleanFetchXml = function (xmlString) {
@@ -7316,9 +7357,30 @@ Xrm.RESTBuilder.CleanFetchXml = function (xmlString) {
 	return output;
 }
 
-Xrm.RESTBuilder.SetDefaultGuid = function (value) {
-	if (value)
+Xrm.RESTBuilder.MakeValidString = function (value) {
+	if (value) {
+		value = value.replace(/\"/g, '\\"');
+	}
+	return value;
+}
+
+Xrm.RESTBuilder.MakeValidNumber = function (value, includeDecimal) {
+	if (value) {
+		if (includeDecimal) {
+			value = value.replace(/[^0-9.]/ig, "");
+		}
+		else {
+			value = value.replace(/[^0-9]/ig, "");
+		}
+	}
+	return value;
+}
+
+Xrm.RESTBuilder.MakeValidGuid = function (value) {
+	if (value) {
+		value = value.replace(/[^a-z0-9-]/ig, "");
 		return value;
+	}
 	return "00000000-0000-0000-0000-000000000000";
 }
 

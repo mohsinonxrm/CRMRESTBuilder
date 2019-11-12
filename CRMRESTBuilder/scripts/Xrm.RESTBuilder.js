@@ -978,10 +978,13 @@ Xrm.RESTBuilder.ToggleWebApiFunctionality = function () {
 			$("#ui-accordion-Accordion-header-1").hide();
 			$("#ui-accordion-Accordion-header-2").hide();
 			$("#ui-accordion-Accordion-header-3").hide();
+			$("#ExpandEntity").prop("selectedIndex", 0);
+			$("#ExpandEntity").attr("disabled", "disabled");
 		} else { //Supported in 8.1+
 			$("#ui-accordion-Accordion-header-1").show();
 			$("#ui-accordion-Accordion-header-2").show();
 			$("#ui-accordion-Accordion-header-3").show();
+			$("#ExpandEntity").removeAttr("disabled");
 		}
 	}
 
@@ -4377,9 +4380,15 @@ Xrm.RESTBuilder.CreateFilterEntities = function (oneToMany, manyToOne, manyToMan
 	for (var j = 0; j < manyToOne.length; j++) {
 		var mtoEntity = $.grep($("#EntityList option"), function (e) { return $(e).attr("LogicalName") === manyToOne[j].ReferencedEntity; });
 		if (mtoEntity.length > 0) {
-			var selfReferencing = ((manyToOne[j].ReferencedEntity === manyToOne[j].ReferencingEntity) ? "Referencing" : "");
-			options.push("<option EntityLogicalName='" + manyToOne[j].ReferencedEntity + "' value='" + selfReferencing + manyToOne[j].SchemaName + "'>(N:1) (" +
-				manyToOne[j].SchemaName + ") " + $(mtoEntity[0]).attr("value") + "</option>");
+			var option = "<option EntityLogicalName='" + manyToOne[j].ReferencedEntity + "'";
+			var selfReferencing = "";
+			if (Xrm.RESTBuilder.Endpoint === "2011") {
+				selfReferencing = ((manyToOne[j].ReferencedEntity === manyToOne[j].ReferencingEntity) ? "Referencing" : "");
+			}
+			option += "RelationshipSchemaName='" + selfReferencing + manyToOne[j].SchemaName + "'";
+			option += "ReferencingAttribute='" + manyToOne[j].ReferencingAttribute + "'>";
+			option += "(N:1) (" + manyToOne[j].SchemaName + ") " + $(mtoEntity[0]).attr("value") + "</option>";
+			options.push(option);
 		}
 		$("#ExpandEntity").html(options.join(""));
 		Xrm.RESTBuilder.RelatedEntities.push(manyToOne[j].ReferencedEntity);
@@ -4389,7 +4398,7 @@ Xrm.RESTBuilder.CreateFilterEntities = function (oneToMany, manyToOne, manyToMan
 		Xrm.RESTBuilder.RelatedEntities.push(manyToMany[k].Entity2LogicalName);
 	}
 	Xrm.RESTBuilder.SortSelect($("#ExpandEntity"));
-	$("#ExpandEntity").prepend("<option EntityLogicalName='' value=''>(Entity) " + Xrm.RESTBuilder.EntitySchema + "</option>");
+	$("#ExpandEntity").prepend("<option EntityLogicalName='' RelationshipSchemaName='' ReferencingAttribute=''>(Entity) " + Xrm.RESTBuilder.EntitySchema + "</option>");
 	if (Xrm.RESTBuilder.CurrentEntityExpandedAttributes.length === 0) {
 		Xrm.RESTBuilder.RelatedEntities = Xrm.RESTBuilder.RemoveArrayDuplicates(Xrm.RESTBuilder.RelatedEntities);
 		Xrm.RESTBuilder.GetExpandedAttributeMetadata(Xrm.RESTBuilder.RelatedEntities);
@@ -4446,8 +4455,8 @@ Xrm.RESTBuilder.BuildPrefer = function (annotations, top, returnRecord) {
 
 Xrm.RESTBuilder.BuildExpandString = function () {
 	var expand = [];
-	if ($("#ExpandEntity").val() !== "" && Xrm.RESTBuilder.Type === "RetrieveMultiple") {
-		expand.push($("#ExpandEntity").val());
+	if ($("#ExpandEntity option:selected").attr("RelationshipSchemaName") !== "" && Xrm.RESTBuilder.Type === "RetrieveMultiple") {
+		expand.push($("#ExpandEntity option:selected").attr("RelationshipSchemaName"));
 	}
 
 	for (var i = 2; i < 5; i++) {
@@ -4463,8 +4472,8 @@ Xrm.RESTBuilder.BuildExpandString = function () {
 
 Xrm.RESTBuilder.BuildExpandString_WebApi = function () {
 	var expand = [];
-	if ($("#ExpandEntity").val() !== "") {
-		expand.push($("#ExpandEntity").val());
+	if ($("#ExpandEntity option:selected").attr("ReferencingAttribute") !== "") {
+		expand.push($("#ExpandEntity option:selected").attr("ReferencingAttribute"));
 	}
 
 	var expands = [];
@@ -4524,7 +4533,7 @@ Xrm.RESTBuilder.BuildFilterString = function () {
 	var filters = [];
 	var groups = [];
 	var rowGroups = [];
-	var ex = $("#ExpandEntity").val();
+	var ex = $("#ExpandEntity option:selected").attr("RelationshipSchemaName");
 
 	//Remove any empty filter rows
 	var rows = $("#TableRetrieve tbody tr");
@@ -4664,22 +4673,18 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 	for (var a = 0; a < $("#TableRetrieve tbody tr").length; a++) {
 		var tr = $("#TableRetrieve tbody tr")[a];
 		var filter = [];
-		var field = null;
-
-		if ($("#ExpandEntity").prop("selectedIndex") === 0) {
-			field = $.grep(Xrm.RESTBuilder.CurrentEntityAttributes, function (e) { return e.SchemaName === $(tr).find(".Attribute:first").val(); })[0].LogicalName;
-		} else {
-			field = $.grep(Xrm.RESTBuilder.CurrentEntityExpandedAttributes, function (e) { return e.LogicalName === $("#ExpandEntity option:selected").attr("EntityLogicalName"); })[0].SchemaName;
-		}
-
 		var attribute = null;
-		var type = null;
+		var isExpandFilter = $("#ExpandEntity").prop("selectedIndex") !== 0 ? true : false;
+
 		if ($("#ExpandEntity").prop("selectedIndex") === 0) {
 			attribute = $.grep(Xrm.RESTBuilder.CurrentEntityAttributes, function (e) { return e.SchemaName === $(tr).find(".Attribute:first").val(); });
 		} else {
-			attribute = $.grep(Xrm.RESTBuilder.CurrentEntityExpandedAttributes, function (e) { return e.LogicalName === $("#ExpandEntity option:selected").attr("EntityLogicalName"); })[0].SchemaName;
+			var expandEntity = $.grep(Xrm.RESTBuilder.CurrentEntityExpandedAttributes, function (e) { return e.LogicalName === $("#ExpandEntity option:selected").attr("EntityLogicalName"); });
+			attribute = $.grep(expandEntity[0].Attributes, function (e) { return e.SchemaName === $(tr).find(".Attribute:first").val(); });
 		}
-		type = attribute[0].AttributeType;
+		var type = attribute[0].AttributeType;
+		var field = attribute[0].LogicalName;
+
 
 		var cop = $(tr).find(".Filter:first").val();
 		if (cop.indexOf("substringof([value],[field])") !== -1) {
@@ -4689,7 +4694,7 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 		cop = cop.replace("[field] ", "");
 
 		var val = null;
-		if (type === "Boolean" || type === "State" || type === "Status" || type === "Picklist" || "ManagedProperty") {
+		if (type === "Boolean" || type === "State" || type === "Status" || type === "Picklist" || type === "ManagedProperty") {
 			if ($(tr).find("td:eq(4) select:first").is(":visible")) {
 				val = $(tr).find("td:eq(4) select:first").val();
 			}
@@ -4722,10 +4727,16 @@ Xrm.RESTBuilder.BuildFilterString_WebApi = function () {
 			value = Xrm.RESTBuilder.ReplaceSpecial(value);
 		}
 
+		if (isExpandFilter) {
+			filter.push($("#ExpandEntity option:selected").attr("ReferencingAttribute") + "/");
+		}
+
 		if (cop.indexOf("[value]") !== -1) {
 			filter.push(cop.replace("[field]", field).replace("[value]", "'" + value + "'"));
 		} else {
-			filter.push(" ");
+			if (!isExpandFilter) {
+				filter.push(" ");
+			}
 
 			if (type === "Owner" || type === "Customer" || type === "Lookup") {
 				filter.push("_" + field + "_value" + " " + cop + (($(tr).find("input:first").is(":visible") ? " " + value : "")));
@@ -5494,6 +5505,7 @@ Xrm.RESTBuilder.Endpoint_Change = function () {
 		$("#LibraryXrmWebApi").button("option", "disabled", true);
 		if ($("#LibraryXrmWebApi").is(":checked")) {
 			$("#LibraryXMLHTTP").prop("checked", "true").button("refresh");
+			Xrm.RESTBuilder.Library_Change();
 		}
 		$("#TypePredefinedQuery").button("option", "disabled", true);
 		$("#FormattedValues").hide();
@@ -5506,8 +5518,8 @@ Xrm.RESTBuilder.Endpoint_Change = function () {
 		$("#ui-accordion-Accordion-header-1").show();
 		$("#ui-accordion-Accordion-header-2").show();
 		$("#ui-accordion-Accordion-header-3").show();
-		$("#ExpandEntity").prop("disabled", false);
 		$("#WebApiVersion").prop("disabled", true);
+		$("#ExpandEntity").removeAttr("disabled");
 		$("#TypeRetrieveNextLink").button("option", "disabled", true);
 		$("#Upsert").hide();
 
@@ -5540,6 +5552,7 @@ Xrm.RESTBuilder.Endpoint_Change = function () {
 		$("#TypeAction").button("option", "disabled", false);
 		$("#TypeFunction").button("option", "disabled", false);
 		$("#WebApiVersion").prop("disabled", false);
+		$("#ExpandEntity").removeAttr("disabled");
 		$("#FormattedValues").show();
 		$("#DetectChanges").show();
 		$("#AuthToken").show();
@@ -5556,8 +5569,8 @@ Xrm.RESTBuilder.Endpoint_Change = function () {
 				$("#ui-accordion-Accordion-header-1").hide();
 				$("#ui-accordion-Accordion-header-2").hide();
 				$("#ui-accordion-Accordion-header-3").hide();
+				$("#ExpandEntity").attr("disabled", "disabled");
 			}
-			$("#ExpandEntity").prop("disabled", true);
 		}
 
 		if (parseFloat($("#WebApiVersion").val()) >= 9) {
@@ -5644,6 +5657,7 @@ Xrm.RESTBuilder.Type_Change = function () {
 	switch (Xrm.RESTBuilder.Type) {
 		case "RetrieveMultiple":
 			$("#ExpandEntity").prop("selectedIndex", 0);
+			$("#ExpandEntity").removeAttr("disabled");
 			$("#OrderBy").show();
 			$("#Retrieve").show();
 			Xrm.RESTBuilder.AddAttribute_Click();
@@ -5656,8 +5670,8 @@ Xrm.RESTBuilder.Type_Change = function () {
 					$("#ui-accordion-Accordion-header-1").hide();
 					$("#ui-accordion-Accordion-header-2").hide();
 					$("#ui-accordion-Accordion-header-3").hide();
+					$("#ExpandEntity").attr("disabled", "disabled");
 				}
-				$("#ExpandEntity").prop("disabled", true);
 
 				$("#DetectChanges").hide();
 				$("#FormattedValues").show();
